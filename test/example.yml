@@ -1,0 +1,80 @@
+
+deck:
+    size: 40
+    cards:
+        w-red:
+            count: 3
+            attribute: ['M', 'low', 'witches'] 
+        w-yellow:
+            count: 2
+            attribute: ['M', 'low', 'witches']
+        w-grey:
+            count: 2
+            attribute: ['M', 'low', 'witches']
+        w-green:
+            attribute: ['M', 'low', 'witches']
+        w-blue:
+            count: 2
+            attribute: ['M', 'witches']
+        w-black:
+            count: 2
+            attribute: ['M', 'witches']
+        w-white:
+            attribute: ['M', 'witches']
+        w-creation:
+            count: 3
+            attribute: ['H', 'witches']
+        w-sabo:
+            count: 2
+            attribute: ['H', 'witches']
+        w-colab:
+            attribute: ['H', 'witches']
+        w-demo:
+            count: 2
+            attribute: ['H', 'witches']
+        w-wind:
+            attribute: ['H', 'witches']
+        w-street:
+            attribute: ['H', 'witches']
+        w-scroll:
+            attribute: ['H', 'witches']
+        sato:
+            count: 4
+            attribute: ['H']
+        dhero-fusion:
+            count: 2
+            attribute: ['H', 'dhero']
+        w-patoro:
+            attribute: ['W', 'witches']
+        others:
+            count: -1
+    classes:
+        Witches: a:witches
+        Witches-Monster: Witches  a:M
+        Witches-Low-Monster: Witches  a:M  a:low
+        Witches-High-Monster: Witches-Monster  !a:low
+        Witches-Magic: Witches  a:H
+        Witches-Search: w-creation
+        Field: sato
+        DHERO-Fusion: dhero-fusion
+simulate:
+    count: 50000
+    start_card: 5
+    turns: 6
+    separate: no
+    tests:
+        combo1:
+            - Witches-Low-Monster
+            - Witches-Magic
+        combo2:
+            - Witches-Search
+            - Witches-Magic
+        combo3:
+            - Witches-High-Monster
+            - w-demo
+            - Witches-Magic
+        combo4:
+            - DHERO-Fusion
+    
+
+
