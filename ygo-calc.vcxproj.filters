@@ -52,5 +52,8 @@
     <None Include="test\example.yml">
       <Filter>源文件</Filter>
     </None>
+    <None Include="README.md">
+      <Filter>源文件</Filter>
+    </None>
   </ItemGroup>
 </Project>

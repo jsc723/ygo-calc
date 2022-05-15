@@ -43,7 +43,8 @@ deck：配置牌组
         1. 牌组（deck）中定义的卡牌名
         2. 定义在当前class之前的类型名 （例如class1已经定义，当前在定义class2，则定义class2时可以引用class1）
         3. a:属性  ->  要求该类型包含某种特定的属性
-        4. !条件   ->  逻辑取反（要求后面跟的条件为假）
+        4. A:属性表达式  -> 要求该类型包含某种特定的属性，后面的表达式可以带*（匹配任意个任意字符）或？（匹配一个任意字符）
+        5. !条件   ->  逻辑取反（要求后面跟的条件为假）
 simulate: 配置模拟
     count：模拟次数
     start_card: 初始手牌为多少张卡（默认5）
@@ -63,27 +64,27 @@ simulate: 配置模拟
 $ ./ygo-calc.exe example.yml
 size: 40
 cards:
-name: w-red, count: 3, attribute: [M low witches ]
-name: w-yellow, count: 2, attribute: [M low witches ]
-name: w-grey, count: 2, attribute: [M low witches ]
-name: w-green, count: 1, attribute: [M low witches ]
+name: w-red, count: 3, attribute: [M low start witches ]
+name: w-yellow, count: 2, attribute: [M low start witches ]
+name: w-grey, count: 2, attribute: [M low start witches ]
+name: w-green, count: 1, attribute: [M low start witches ]
 name: w-blue, count: 2, attribute: [M witches ]
 name: w-black, count: 2, attribute: [M witches ]
 name: w-white, count: 1, attribute: [M witches ]
-name: w-creation, count: 3, attribute: [H witches ]
-name: w-sabo, count: 2, attribute: [H witches ]
-name: w-colab, count: 1, attribute: [H witches ]
-name: w-demo, count: 2, attribute: [H witches ]
-name: w-wind, count: 1, attribute: [H witches ]
-name: w-street, count: 1, attribute: [H witches ]
-name: w-scroll, count: 1, attribute: [H witches ]
-name: sato, count: 4, attribute: [H ]
-name: dhero-fusion, count: 2, attribute: [H dhero ]
+name: w-creation, count: 3, attribute: [H1 start witches ]
+name: w-sabo, count: 2, attribute: [H1 witches ]
+name: w-colab, count: 1, attribute: [H1 witches ]
+name: w-demo, count: 2, attribute: [H2 witches ]
+name: w-wind, count: 1, attribute: [H2 witches ]
+name: w-street, count: 1, attribute: [H0 witches ]
+name: w-scroll, count: 1, attribute: [H0 witches ]
+name: sato, count: 4, attribute: [Hf ]
+name: dhero-fusion, count: 2, attribute: [H1 dhero ]
 name: w-patoro, count: 1, attribute: [W witches ]
 name: others, count: 9
 
 w-creation: name==w-creation
-Witches-High-Monster: attr=witches && attr=M && !attr=low
+Witches-High-Monster: attr~w*ch?s && attr=M && !attr=low
 w-red: name==w-red
 w-green: name==w-green
 w-black: name==w-black
@@ -102,26 +103,26 @@ DHERO-Fusion: name==dhero-fusion
 dhero-fusion: name==dhero-fusion
 w-patoro: name==w-patoro
 others: name==others
-Witches: attr=witches
-Witches-Monster: attr=witches && attr=M
-Witches-Low-Monster: attr=witches && attr=M && attr=low
-Witches-Magic: attr=witches && attr=H
+Witches: attr~w*ch?s
+Witches-Monster: attr~w*ch?s && attr=M
+Witches-Low-Monster: attr~w*ch?s && attr=M && attr=low
+Witches-Magic: attr~w*ch?s && attr~H?
 Witches-Search: name==w-creation
+Witches-Start: attr=start
 Field: name==sato
 
-combo1: Witches-Low-Monster  Witches-Magic
-combo2: Witches-Search  Witches-Magic
-combo3: Witches-High-Monster  w-demo  Witches-Magic
-combo4: DHERO-Fusion
+combo1: Witches-Start  Witches-Magic
+combo2: Witches-High-Monster  w-demo  Witches-Magic
+combo3: DHERO-Fusion
 
 Simulate 50000 times...
-Time used: 977ms
-Turn 1 total: 77.15%  combo1: 54.38%  combo2: 23.19%  combo3: 6.75%  combo4: 23.51%
-Turn 2 total: 86.08%  combo1: 65.26%  combo2: 30.38%  combo3: 10.92%  combo4: 27.79%
-Turn 3 total: 91.81%  combo1: 74.06%  combo2: 37.35%  combo3: 15.73%  combo4: 31.94%
-Turn 4 total: 95.22%  combo1: 80.80%  combo2: 43.85%  combo3: 20.92%  combo4: 36.26%
-Turn 5 total: 97.24%  combo1: 86.02%  combo2: 49.83%  combo3: 26.23%  combo4: 40.27%
-Turn 6 total: 98.40%  combo1: 89.89%  combo2: 55.36%  combo3: 31.54%  combo4: 44.12%
+Time used: 1463ms
+Turn 1 total: 74.61%  combo1: 61.09%  combo2: 6.58%  combo3: 23.51%
+Turn 2 total: 83.99%  combo1: 72.22%  combo2: 10.77%  combo3: 27.83%
+Turn 3 total: 90.14%  combo1: 80.65%  combo2: 15.33%  combo3: 32.18%
+Turn 4 total: 94.04%  combo1: 86.73%  combo2: 20.54%  combo3: 36.15%
+Turn 5 total: 96.54%  combo1: 91.20%  combo2: 25.88%  combo3: 40.11%
+Turn 6 total: 98.01%  combo1: 94.23%  combo2: 31.19%  combo3: 43.97%
 ```
   
   
