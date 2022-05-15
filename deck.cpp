@@ -1,4 +1,5 @@
 #include "deck.h"
+#include <algorithm>
 using namespace std;
 namespace YGO
 {
@@ -21,6 +22,7 @@ namespace YGO
 			{
 				m_attribute.emplace_back(attr[i].as<t_string>());
 			}
+			std::sort(m_attribute.begin(), m_attribute.end());
 		}
 	}
 	Card Card::operator=(const Card& rhs)
@@ -29,6 +31,16 @@ namespace YGO
 		m_count = rhs.m_count;
 		m_attribute = rhs.m_attribute;
 		return *this;
+	}
+	bool Card::testAttribute(const t_string& attr) const
+	{
+		return std::binary_search(m_attribute.begin(), m_attribute.end(), attr);
+	}
+	bool Card::testAttributeWildcard(const t_string& pattern) const
+	{
+		return std::any_of(m_attribute.begin(), m_attribute.end(), [&](auto& attr) {
+			return wildCardMatch(attr, pattern);
+		});
 	}
 	std::ostream& operator<<(std::ostream& os, const Card& card)
 	{

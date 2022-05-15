@@ -148,6 +148,7 @@
   <ItemGroup>
     <ClCompile Include="deck.cpp" />
     <ClCompile Include="context.cpp" />
+    <ClCompile Include="global.cpp" />
     <ClCompile Include="simulator.cpp" />
     <ClCompile Include="ygo-calc.cpp" />
   </ItemGroup>

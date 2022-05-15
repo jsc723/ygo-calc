@@ -34,18 +34,26 @@ namespace YGO
 		CardAttributeCondition(const t_string attr): m_attr(attr) {}
 		bool match(const Card& card) const override
 		{
-			for (auto& attr : card.attributes())
-			{
-				if (m_attr == attr) 
-				{
-					return true;
-				}
-			}
-			return false;
+			return card.testAttribute(m_attr);
 		}
 		void print(std::ostream& os) const override
 		{
 			os << "attr=" << m_attr;
+		}
+	};
+
+	class CardAttributeWildcardCondition : public Condition
+	{
+		const t_string m_pattern;
+	public:
+		CardAttributeWildcardCondition(const t_string pattern) : m_pattern(pattern) {}
+		bool match(const Card& card) const override
+		{
+			return card.testAttributeWildcard(m_pattern);
+		}
+		void print(std::ostream& os) const override
+		{
+			os << "attr~" << m_pattern;
 		}
 	};
 

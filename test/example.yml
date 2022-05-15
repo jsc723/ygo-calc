@@ -4,15 +4,15 @@ deck:
     cards:
         w-red:
             count: 3
-            attribute: ['M', 'low', 'witches'] 
+            attribute: ['M', 'low', 'witches', 'start'] 
         w-yellow:
             count: 2
-            attribute: ['M', 'low', 'witches']
+            attribute: ['M', 'low', 'witches', 'start']
         w-grey:
             count: 2
-            attribute: ['M', 'low', 'witches']
+            attribute: ['M', 'low', 'witches', 'start']
         w-green:
-            attribute: ['M', 'low', 'witches']
+            attribute: ['M', 'low', 'witches', 'start']
         w-blue:
             count: 2
             attribute: ['M', 'witches']
@@ -23,57 +23,55 @@ deck:
             attribute: ['M', 'witches']
         w-creation:
             count: 3
-            attribute: ['H', 'witches']
+            attribute: ['H1', 'witches', 'start']
         w-sabo:
             count: 2
-            attribute: ['H', 'witches']
+            attribute: ['H1', 'witches']
         w-colab:
-            attribute: ['H', 'witches']
+            attribute: ['H1', 'witches']
         w-demo:
             count: 2
-            attribute: ['H', 'witches']
+            attribute: ['H2', 'witches']
         w-wind:
-            attribute: ['H', 'witches']
+            attribute: ['H2', 'witches']
         w-street:
-            attribute: ['H', 'witches']
+            attribute: ['H0', 'witches']
         w-scroll:
-            attribute: ['H', 'witches']
+            attribute: ['H0', 'witches']
         sato:
             count: 4
-            attribute: ['H']
+            attribute: ['Hf']
         dhero-fusion:
             count: 2
-            attribute: ['H', 'dhero']
+            attribute: ['H1', 'dhero']
         w-patoro:
             attribute: ['W', 'witches']
         others:
             count: -1
     classes:
-        Witches: a:witches
+        Witches: A:w*ch?s
         Witches-Monster: Witches  a:M
         Witches-Low-Monster: Witches  a:M  a:low
         Witches-High-Monster: Witches-Monster  !a:low
-        Witches-Magic: Witches  a:H
+        Witches-Magic: Witches  A:H?
         Witches-Search: w-creation
+        Witches-Start: a:start
         Field: sato
         DHERO-Fusion: dhero-fusion
 simulate:
     count: 50000
     start_card: 5
     turns: 6
-    separate: no
+    separate: yes
     tests:
         combo1:
-            - Witches-Low-Monster
+            - Witches-Start
             - Witches-Magic
         combo2:
-            - Witches-Search
-            - Witches-Magic
-        combo3:
             - Witches-High-Monster
             - w-demo
             - Witches-Magic
-        combo4:
+        combo3:
             - DHERO-Fusion
     
 

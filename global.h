@@ -9,4 +9,5 @@ namespace YGO
 		std::cout << msg << std::endl;
 		exit(code);
 	}
+	bool wildCardMatch(const t_string& s, const t_string& p);
 }

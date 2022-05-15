@@ -19,7 +19,8 @@ namespace YGO {
 		Card operator=(const Card &rhs);
 		friend std::ostream& operator<<(std::ostream& os, const Card& card);
 		t_string name() const { return m_name; }
-		const std::vector<t_string>& attributes() const { return m_attribute; }
+		bool testAttribute(const t_string& attr) const;
+		bool testAttributeWildcard(const t_string& pattern) const;
 		int count() const { return m_count; }
 		void set_count(int cnt) { m_count = cnt; }
 	};

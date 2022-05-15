@@ -16,10 +16,17 @@ namespace YGO
 			auto child = parseSingle(context, cond.substr(1));
 			return new NotCondition(child);
 		}
-		if (cond.size() > 2 && cond[0] == 'a' && cond[1] == ':')
+		if (cond.size() > 2 && cond[1] == ':')
 		{
-			return new CardAttributeCondition(cond.substr(2));
+			switch (cond[0])
+			{
+			case 'a':
+				return new CardAttributeCondition(cond.substr(2));
+			case 'A':
+				return new CardAttributeWildcardCondition(cond.substr(2));
+			}
 		}
+		
 		panic("Unknown condition: " + cond);
 	}
 	std::vector<t_string> Utils::strSplit(const t_string& s)
@@ -51,4 +58,5 @@ namespace YGO
 		}
 		return nullptr;
 	}
+
 }
