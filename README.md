@@ -1,6 +1,6 @@
 # 游戏王抽卡模拟器
 ## 使用方法
-1. 创建一个yml文件，里面格式如下
+### 1. 创建一个yml文件，里面格式如下
 ```yaml
 deck:
   size: 40
@@ -58,6 +58,17 @@ simulate: 配置模拟
             （注：当一张卡牌匹配了一种手牌类型之后，这张卡牌不会被用于匹配其他手牌类型，列举在前的手牌类型具有更高的优先级）
 ```
 具体的例子可以参照`test/example.yml`
+
+### 2. 运行程序
+假设在当前目录下有
+```
+example.yml
+ygo-calc.exe
+```
+则可以通过如下任意方式运行程序：
+1. 双击ygo-calc.exe，在弹出的窗口中输入example.exe并按回车
+2. 把example.yml的图标拖拽至ygo-calc.exe上直接运行
+3. 打开控制台（cmd或powershell），cd至当前目录，输入`./ygo-calc.exe example.yml`
 
 ## 程序输出样例
 ```
