@@ -116,12 +116,12 @@ combo4: DHERO-Fusion
 
 Simulate 50000 times...
 Time used: 977ms
-Turn 1 total: 77.01%
-Turn 2 total: 85.89%
-Turn 3 total: 91.64%
-Turn 4 total: 95.18%
-Turn 5 total: 97.25%
-Turn 6 total: 98.48%
+Turn 1 total: 77.15%  combo1: 54.38%  combo2: 23.19%  combo3: 6.75%  combo4: 23.51%
+Turn 2 total: 86.08%  combo1: 65.26%  combo2: 30.38%  combo3: 10.92%  combo4: 27.79%
+Turn 3 total: 91.81%  combo1: 74.06%  combo2: 37.35%  combo3: 15.73%  combo4: 31.94%
+Turn 4 total: 95.22%  combo1: 80.80%  combo2: 43.85%  combo3: 20.92%  combo4: 36.26%
+Turn 5 total: 97.24%  combo1: 86.02%  combo2: 49.83%  combo3: 26.23%  combo4: 40.27%
+Turn 6 total: 98.40%  combo1: 89.89%  combo2: 55.36%  combo3: 31.54%  combo4: 44.12%
 ```
   
   
