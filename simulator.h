@@ -20,7 +20,14 @@ namespace YGO {
 			void bind(Context& context);
 			void print(std::ostream& os);
 		};
-		std::vector<Combo> m_combos;
+		struct Topic {
+			t_string name;
+			std::vector<Combo> m_combos;
+			bool test(const std::vector<Card> cards);
+			void bind(Context& context);
+			void print(std::ostream& os);
+		};
+		std::vector<Topic> m_topics;
 	public:
 		Simulator(YAML::Node simulate);
 		void run(const Deck& deck, Context& context);

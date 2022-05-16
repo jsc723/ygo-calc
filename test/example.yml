@@ -44,8 +44,12 @@ deck:
         dhero-fusion:
             count: 2
             attribute: ['H1', 'dhero']
-        w-patoro:
-            attribute: ['W', 'witches']
+        urara:
+            count: 2
+            attribute: ['M', 'handtrap']
+        huai-shou:
+            count: 1
+            attribute: ['M', 'huai-shou']
         others:
             count: -1
     classes:
@@ -58,21 +62,30 @@ deck:
         Witches-Start: a:start
         Field: sato
         DHERO-Fusion: dhero-fusion
+        Hand-Trap: a:handtrap
 simulate:
     count: 50000
     start_card: 5
     turns: 6
-    separate: yes
     tests:
-        combo1:
-            - Witches-Start
-            - Witches-Magic
-        combo2:
-            - Witches-High-Monster
-            - w-demo
-            - Witches-Magic
-        combo3:
-            - DHERO-Fusion
+        Expand:
+            witches1:
+                - Witches-Start
+                - Witches-Magic
+            witches2:
+                - Witches-High-Monster
+                - w-demo
+                - Witches-Magic
+            dhero:
+                - DHERO-Fusion
+        Field:
+            field:
+                - Field
+        Resist:
+            hand-trap:
+                - Hand-Trap
+            huai-shou:
+                - huai-shou
     
 
 
