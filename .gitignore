@@ -1,2 +1,3 @@
 *.user
 /.vs/ygo-calc
+/x64
