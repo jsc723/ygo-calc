@@ -14,7 +14,7 @@ namespace YGO {
 		int m_turns;
 		struct Combo {
 			t_string name;
-			std::vector<t_string> condition_names;
+			std::vector<t_string> condition_strings;
 			std::vector<Condition*> conditions;
 			bool test(const std::vector<Card> cards);
 			void bind(Context& context);

@@ -59,31 +59,27 @@ deck:
         Witches-High-Monster: Witches-Monster  !a:low
         Witches-Magic: Witches  A:H?
         Witches-Search: w-creation
-        Witches-Start: a:start
-        Field: sato
-        DHERO-Fusion: dhero-fusion
-        Hand-Trap: a:handtrap
 simulate:
-    count: 50000
+    count: 1000
     start_card: 5
     turns: 6
     tests:
         Expand:
             witches1:
-                - Witches-Start
+                - a:start
                 - Witches-Magic
             witches2:
-                - Witches-High-Monster
+                - Witches-Monster  !a:low
                 - w-demo
                 - Witches-Magic
             dhero:
-                - DHERO-Fusion
+                - dhero-fusion
         Field:
             field:
-                - Field
+                - sato
         Resist:
             hand-trap:
-                - Hand-Trap
+                - a:handtrap
             huai-shou:
                 - huai-shou
     

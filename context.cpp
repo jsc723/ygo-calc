@@ -27,7 +27,7 @@ namespace YGO
 			}
 		}
 		
-		panic("Unknown condition: " + cond);
+		panic("Cannot parse condition: " + cond);
 	}
 	std::vector<t_string> Utils::strSplit(const t_string& s)
 	{
@@ -40,7 +40,7 @@ namespace YGO
 		vector<t_string> conds = strSplit(cond);
 		if (conds.size() == 0)
 		{
-			panic("class cannot be empty");
+			panic("condition cannot be empty");
 		}
 		auto andCond = new AndCondition();
 		for (auto& c : conds)

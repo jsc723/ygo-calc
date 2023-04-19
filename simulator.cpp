@@ -35,7 +35,7 @@ YGO::Simulator::Simulator(YAML::Node simulate)
 					for (int j = 0; j < combo_node.size(); j++)
 					{
 						t_string cond_k = combo_node[j].as<t_string>();
-						combo.condition_names.push_back(cond_k);
+						combo.condition_strings.push_back(cond_k);
 					}
 				}
 				topic.m_combos.emplace_back(std::move(combo));
@@ -129,12 +129,12 @@ void YGO::Simulator::run(const Deck& deck, Context& context)
 void YGO::Simulator::Combo::bind(Context& context)
 {
 	conditions.clear();
-	for (int i = 0; i < condition_names.size(); i++)
+	for (auto condition_str: condition_strings)
 	{
-		auto cond = context.getCondition(condition_names[i]);
+		auto *cond = context.getCondition(condition_str);
 		if (!cond)
 		{
-			panic("simulate/" + name + ": cannot find condition " + condition_names[i]);
+			cond = Utils::parse(context, condition_str);
 		}
 		conditions.push_back(cond);
 	}
@@ -166,7 +166,7 @@ bool YGO::Simulator::Combo::test(std::vector<Card> cards)
 void YGO::Simulator::Combo::print(ostream& os)
 {
 	os << name << ": ";
-	for (auto cond : condition_names)
+	for (auto cond : condition_strings)
 	{
 		os << cond << "  ";
 	}

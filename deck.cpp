@@ -59,7 +59,8 @@ namespace YGO
 
 	Deck::Deck(const YAML::Node& node)
 	{
-		m_size = node["size"].as<int>();
+		auto size_node = node["size"];
+		m_size =  size_node.IsDefined() ? size_node.as<int>() : 0;
 		auto& cards = node["cards"];
 		int auto_count_idx = -1;
 		int specified_size = 0;
@@ -85,6 +86,10 @@ namespace YGO
 		if (auto_count_idx != -1) 
 		{
 			m_cards[auto_count_idx].set_count(m_size - specified_size);
+		}
+		else
+		{
+			m_size = specified_size;
 		}
 	}
 
