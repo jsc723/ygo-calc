@@ -52,7 +52,7 @@ deck:
             attribute: ['M', 'huai-shou']
         others:
             count: -1
-    classes:
+    conditions:
         Witches: A:w*ch?s
         Witches-Monster: Witches  a:M
         Witches-Low-Monster: Witches  a:M  a:low
@@ -76,7 +76,7 @@ simulate:
                     - w-demo
                     - Witches-Magic
             dhero:
-                score: 1.5
+                score: 2.0
                 conditions:
                     - dhero-fusion
         Field:

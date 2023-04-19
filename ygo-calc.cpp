@@ -53,14 +53,14 @@ int main(int argc, char **argv)
     {
         context.addCardNameCondition(card);
     }
-    YAML::Node classes = root["deck"]["classes"];
-    if (classes.IsDefined())
+    YAML::Node conditions = root["deck"]["conditions"];
+    if (conditions.IsDefined())
     {
-        for (auto it = classes.begin(); it != classes.end(); ++it)
+        for (auto it = conditions.begin(); it != conditions.end(); ++it)
         {
-            auto className = it->first.as<t_string>();
+            auto conditionName = it->first.as<t_string>();
             auto condition = it->second.as<t_string>();
-            context.addCondition(className, Utils::parse(context, condition));
+            context.addCondition(conditionName, Utils::parse(context, condition));
         }
     }
     context.print(cout);
