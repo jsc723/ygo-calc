@@ -30,13 +30,20 @@ YGO::Simulator::Simulator(YAML::Node simulate)
 				Combo combo;
 				combo.name = jt->first.as<t_string>();
 				auto combo_node = jt->second;
-				if (combo_node.IsDefined() && combo_node.IsSequence())
+				if (combo_node["score"].IsDefined()) {
+					combo.score = combo_node["score"].as<double>();
+				}
+				auto combo_conds_node = combo_node["conditions"];
+				if (combo_conds_node.IsDefined() && combo_conds_node.IsSequence())
 				{
-					for (int j = 0; j < combo_node.size(); j++)
+					for (int j = 0; j < combo_conds_node.size(); j++)
 					{
-						t_string cond_k = combo_node[j].as<t_string>();
+						t_string cond_k = combo_conds_node[j].as<t_string>();
 						combo.condition_strings.push_back(cond_k);
 					}
+				}
+				else {
+					panic("Combo is not correctly defined: " + combo.name);
 				}
 				topic.m_combos.emplace_back(std::move(combo));
 			}
@@ -58,6 +65,7 @@ void YGO::Simulator::run(const Deck& deck, Context& context)
 	int num_topic = m_topics.size();
 	vector<vector<vector<int>>> success(m_turns); //turn, topic, combo
 	vector<vector<int>> total_success(m_turns, vector<int>(num_topic)); //turn, topic
+	vector<vector<double>> total_score(m_turns, vector<double>(num_topic)); //turn, topic
 	int max_num_combo = 0;
 	for (int t = 0; t < m_turns; t++)
 	{
@@ -80,7 +88,6 @@ void YGO::Simulator::run(const Deck& deck, Context& context)
 
 	printf("Simulate %d times...\n", m_count);
 	auto start_time = chrono::high_resolution_clock::now();
-	vector<bool> combo_test(max_num_combo);
 
 	for (int k = 0; k < m_count; k++)
 	{
@@ -91,15 +98,18 @@ void YGO::Simulator::run(const Deck& deck, Context& context)
 			for (int i = 0; i < m_topics.size(); i++)
 			{
 				const int num_combo = m_topics[i].m_combos.size();
-				fill(combo_test.begin(), combo_test.begin() + num_combo, false);
 				bool any_success = false;
+				double max_topic_score = 0.0;
 				for (int j = 0; j < num_combo; j++)
 				{
-					combo_test[j] = m_topics[i].m_combos[j].test(handCards);
-					any_success |= combo_test[j];
-					success[t][i][j] += combo_test[j];
+					if (m_topics[i].m_combos[j].test(handCards)) {
+						success[t][i][j]++;
+						any_success = true;
+						max_topic_score = std::max(max_topic_score, m_topics[i].m_combos[j].score);
+					}
 				}
 				total_success[t][i] += any_success;
+				total_score[t][i] += max_topic_score;
 			}
 			handCards.push_back(cards[m_start_card + t + 1]); //draw
 		}
@@ -114,12 +124,13 @@ void YGO::Simulator::run(const Deck& deck, Context& context)
 		cout << "Topic: " << m_topics[i].name << endl;
 		for (int t = 0; t < m_turns; t++) {
 			const int num_combo = m_topics[i].m_combos.size();
-			printf("Turn %d total: %.2lf%%  ", t + 1, (double)total_success[t][i] / m_count * 100.0);
+			printf("Turn %d average success rate: %.2lf%%    ", t + 1, (double)total_success[t][i] / m_count * 100.0);
+			printf("average score: %.2lf\n", (double)total_score[t][i] / m_count);
 			for (int j = 0; j < num_combo; j++)
 			{
-				printf("%s: %.2lf%%  ", m_topics[i].m_combos[j].name.c_str(), (double)success[t][i][j] / m_count * 100.0);
+				printf("    %s: %.2lf%%  ", m_topics[i].m_combos[j].name.c_str(), (double)success[t][i][j] / m_count * 100.0);
 			}
-			printf("\n");
+			printf("\n\n");
 		}
 		printf("\n");
 	}

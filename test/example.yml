@@ -66,22 +66,30 @@ simulate:
     tests:
         Expand:
             witches1:
-                - a:start
-                - Witches-Magic
+                score: 1.0
+                conditions:
+                    - a:start
+                    - Witches-Magic
             witches2:
-                - Witches-Monster  !a:low
-                - w-demo
-                - Witches-Magic
+                conditions:
+                    - Witches-Monster  !a:low
+                    - w-demo
+                    - Witches-Magic
             dhero:
-                - dhero-fusion
+                score: 1.5
+                conditions:
+                    - dhero-fusion
         Field:
             field:
-                - sato
+                conditions:
+                    - sato
         Resist:
             hand-trap:
-                - a:handtrap
+                conditions:
+                    - a:handtrap
             huai-shou:
-                - huai-shou
+                conditions:
+                    - huai-shou
     
 
 
