@@ -95,7 +95,7 @@ deck:
         Sushi-Non-Rice: Sushi !a:rice
         Kowakuma: a:kowakuma a:M
 simulate:
-    count: 50000
+    count: 5000
     start_card: 5
     turns: 3
     tests:

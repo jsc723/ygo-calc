@@ -49,6 +49,9 @@ namespace YGO
 	std::ostream& operator<<(std::ostream& os, const Card& card)
 	{
 		os << "name: " << card.m_name << ", count: " << card.m_count;
+		//if (card.m_description.size()) {
+		//	os << ", description: " << card.m_description;
+		//}
 		if (card.m_attribute.size())
 		{
 			os << ", attribute: [";
@@ -57,6 +60,12 @@ namespace YGO
 				os << attr << " ";
 			}
 			os << "]";
+		}
+		if (card.m_prog_attribute.size()) {
+			os << ", prog_attr: [" << card.m_prog_attribute << "]";
+		}
+		if (card.m_program.size()) {
+			os << ", program: " << card.m_program;
 		}
 		return os;
 	}
