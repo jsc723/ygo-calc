@@ -57,3 +57,24 @@ std::vector<std::string> YGO::split(std::string s, std::string delimiter) {
 	res.push_back(s.substr(pos_start));
 	return res;
 }
+
+//https://stackoverflow.com/questions/216823/how-to-trim-an-stdstring
+// trim from start (in place)
+void YGO::ltrim(std::string& s) {
+	s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) {
+		return !std::isspace(ch);
+		}));
+}
+
+// trim from end (in place)
+void YGO::rtrim(std::string& s) {
+	s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
+		return !std::isspace(ch);
+		}).base(), s.end());
+}
+
+// trim from both ends (in place)
+void YGO::trim(std::string& s) {
+	rtrim(s);
+	ltrim(s);
+}

@@ -52,7 +52,7 @@ YGO::Simulator::Simulator(YAML::Node simulate)
 	}
 }
 
-void YGO::Simulator::run(const Deck& deck, Context& context)
+void YGO::Simulator::run(const Deck& deck_template, Context& context)
 {
 	for (int i = 0; i < m_topics.size(); i++)
 	{
@@ -78,8 +78,7 @@ void YGO::Simulator::run(const Deck& deck, Context& context)
 		}
 	}
 
-	vector<Card> cards = deck.generate();
-	if (m_start_card + m_turns > cards.size())
+	if (m_start_card + m_turns > deck_template.size())
 	{
 		panic("simulate: start_card + turns must be smaller than deck size");
 	}
@@ -91,8 +90,9 @@ void YGO::Simulator::run(const Deck& deck, Context& context)
 
 	for (int k = 0; k < m_count; k++)
 	{
-		std::shuffle(cards.begin(), cards.end(), rd);
-		vector<Card> handCards(cards.begin(), cards.begin() + m_start_card);
+		vector<Card> deck = deck_template.generate();
+		std::shuffle(deck.begin(), deck.end(), rd);
+		vector<Card> handCards(deck.begin(), deck.begin() + m_start_card);
 		for (int t = 0; t < m_turns; t++)
 		{
 			for (int i = 0; i < m_topics.size(); i++)
@@ -111,7 +111,7 @@ void YGO::Simulator::run(const Deck& deck, Context& context)
 				total_success[t][i] += any_success;
 				total_score[t][i] += max_topic_score;
 			}
-			handCards.push_back(cards[m_start_card + t + 1]); //draw
+			handCards.push_back(deck[m_start_card + t + 1]); //draw
 		}
 	}
 

@@ -26,6 +26,8 @@ namespace YGO {
 		bool test_attribute_wildcard(const t_string& pattern) const;
 		int count() const { return m_count; }
 		void set_count(int cnt) { m_count = cnt; }
+		t_string prog_attribute() { return m_prog_attribute; }
+		t_string program() { return m_program; }
 		bool is_executable() const noexcept { return !m_program.empty(); }
 	};
 	std::ostream& operator<<(std::ostream& os, const Card& card);
@@ -41,6 +43,7 @@ namespace YGO {
 		{
 			return m_cards;
 		}
+		int size() const { return m_size; }
 		const std::vector<Card> generate() const;
 	};
 	std::ostream& operator<<(std::ostream& os, const Deck& deck);

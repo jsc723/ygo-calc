@@ -146,17 +146,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CardCollection.cpp" />
     <ClCompile Include="deck.cpp" />
     <ClCompile Include="context.cpp" />
     <ClCompile Include="global.cpp" />
+    <ClCompile Include="game.cpp" />
     <ClCompile Include="simulator.cpp" />
     <ClCompile Include="ygo-calc.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CardCollection.h" />
     <ClInclude Include="condition.h" />
     <ClInclude Include="deck.h" />
     <ClInclude Include="context.h" />
     <ClInclude Include="global.h" />
+    <ClInclude Include="game.h" />
     <ClInclude Include="simulator.h" />
   </ItemGroup>
   <ItemGroup>

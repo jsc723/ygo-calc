@@ -14,4 +14,9 @@ namespace YGO
 	}
 	bool wildCardMatch(const t_string& s, const t_string& p);
 	std::vector<std::string> split(std::string s, std::string delimiter);
+
+	void ltrim(std::string& s);
+	void rtrim(std::string& s);
+	void trim(std::string& s);
+
 }
