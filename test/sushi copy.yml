@@ -58,6 +58,34 @@ deck:
         others:
             count: 2
 
+        qyou-tan-tubo:
+            description: '强贪壶'
+            program: '[1](# D.10 J);@;(% 2)'
+        qyou-ken-tubo:
+            description: '强谦壶'
+            program: '[1]@;($ D.3 1 H)'
+        qyou-kin-tubo:
+            description: '强金壶'
+            program: '[^]@;(% 2);(! %)'
+        kin-ken-tubo:
+            description: '金谦壶'
+            program: '/!%;@;($ D.6 1 H);(! %)'
+        kotuchi:
+            description: '万宝槌'
+            program: '@;(= x |H.U|);(# H.U D);(% x)'
+        munorengoku:
+            description: '无之炼狱'
+            program: '/(> |H| 2);@;(% 1)'
+        tehuda-masatu:
+            description: '手牌抹杀'
+            program: '@;(= x |H|);(# H B);(% x)'
+        inochi-housatu:
+            description: '削命'
+            program: '[1](# H.a:mahou F);(# H.a:trap F);(? (# H.a:M.1 F));/(> 4 |H|);@;(= x (- 3 |H|));(% x)'
+        cup-of-ace:
+            description: '圣杯A'
+            program: '@;/(> (rand 2) 0);(% 2)'
+
 
         
     conditions:
