@@ -28,8 +28,8 @@ namespace YGO {
 		DefaultCardCollection& operator=(DefaultCardCollection&& other) = default;
 
 		template<class RandomIt>
-		DefaultCardCollection(RandomIt begin, RandomIt end) {
-			cards(begin, end);
+		DefaultCardCollection(RandomIt begin, RandomIt end)
+		: cards(begin, end) {
 		}
 
 		virtual std::vector<Card> front(int k) const {
