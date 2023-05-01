@@ -3,14 +3,6 @@
 using namespace std;
 namespace YGO
 {
-	Card::Card()
-	{
-	}
-	Card::Card(const Card& other)
-		:m_name(other.m_name), m_count(other.m_count),
-		m_attribute(other.m_attribute)
-	{
-	}
 	Card::Card(const t_string name, const YAML::Node& node) : m_name(name)
 	{
 		auto& node_count = node["count"];
@@ -24,19 +16,31 @@ namespace YGO
 			}
 			std::sort(m_attribute.begin(), m_attribute.end());
 		}
+		auto& description_node = node["description"];
+		if (description_node.IsDefined()) {
+			m_description = description_node.as<t_string>();
+		}
+		auto& program_node = node["program"];
+		if (program_node.IsDefined()) {
+			auto prog_str = program_node.as<t_string>();
+			if (!prog_str.empty()) {
+				if (prog_str[0] == '[') {
+					int i = prog_str.find(']');
+					if (i == -1) {
+						panic("] not found");
+					}
+					m_prog_attribute = prog_str.substr(1, i - 1);
+					prog_str = prog_str.substr(i + 1);
+				}
+				m_program = prog_str;
+			}
+		}
 	}
-	Card Card::operator=(const Card& rhs)
-	{
-		m_name = rhs.m_name;
-		m_count = rhs.m_count;
-		m_attribute = rhs.m_attribute;
-		return *this;
-	}
-	bool Card::testAttribute(const t_string& attr) const
+	bool Card::test_attribute(const t_string& attr) const
 	{
 		return std::binary_search(m_attribute.begin(), m_attribute.end(), attr);
 	}
-	bool Card::testAttributeWildcard(const t_string& pattern) const
+	bool Card::test_attribute_wildcard(const t_string& pattern) const
 	{
 		return std::any_of(m_attribute.begin(), m_attribute.end(), [&](auto& attr) {
 			return wildCardMatch(attr, pattern);

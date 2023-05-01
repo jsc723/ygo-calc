@@ -2,6 +2,7 @@
 #include <string>
 #include <cstdlib>
 #include <iostream>
+#include <vector>
 namespace YGO
 {
 	using t_string = std::string;
@@ -12,4 +13,5 @@ namespace YGO
 		exit(code);
 	}
 	bool wildCardMatch(const t_string& s, const t_string& p);
+	std::vector<std::string> split(std::string s, std::string delimiter);
 }

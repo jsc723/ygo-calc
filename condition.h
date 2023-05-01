@@ -34,7 +34,7 @@ namespace YGO
 		CardAttributeCondition(const t_string attr): m_attr(attr) {}
 		bool match(const Card& card) const override
 		{
-			return card.testAttribute(m_attr);
+			return card.test_attribute(m_attr);
 		}
 		void print(std::ostream& os) const override
 		{
@@ -49,7 +49,7 @@ namespace YGO
 		CardAttributeWildcardCondition(const t_string pattern) : m_pattern(pattern) {}
 		bool match(const Card& card) const override
 		{
-			return card.testAttributeWildcard(m_pattern);
+			return card.test_attribute_wildcard(m_pattern);
 		}
 		void print(std::ostream& os) const override
 		{

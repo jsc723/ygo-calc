@@ -10,19 +10,23 @@ namespace YGO {
 	class Card
 	{
 		t_string m_name;
-		int m_count;
+		int m_count = 1;
 		std::vector<t_string> m_attribute;
+		t_string m_description;
+		t_string m_prog_attribute;
+		t_string m_program;
 	public:
-		Card();
-		Card(const Card& other);
+		Card() = default;
+		Card(const Card& other) = default;
 		Card(const t_string name, const YAML::Node& node);
-		Card operator=(const Card &rhs);
+		Card& operator=(const Card &rhs) = default;
 		friend std::ostream& operator<<(std::ostream& os, const Card& card);
 		t_string name() const { return m_name; }
-		bool testAttribute(const t_string& attr) const;
-		bool testAttributeWildcard(const t_string& pattern) const;
+		bool test_attribute(const t_string& attr) const;
+		bool test_attribute_wildcard(const t_string& pattern) const;
 		int count() const { return m_count; }
 		void set_count(int cnt) { m_count = cnt; }
+		bool is_executable() const noexcept { return !m_program.empty(); }
 	};
 	std::ostream& operator<<(std::ostream& os, const Card& card);
 
