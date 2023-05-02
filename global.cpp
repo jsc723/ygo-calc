@@ -90,7 +90,7 @@ std::string YGO::read_while(std::stringstream& s, std::function<bool(char c)> pr
 	std::string w;
 	while (true) {
 		char c = s.peek();
-		if (c == std::char_traits<char>::eof() || pred(c)) {
+		if (c == std::char_traits<char>::eof() || !pred(c)) {
 			break;
 		}
 		w += c;

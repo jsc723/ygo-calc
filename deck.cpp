@@ -46,6 +46,13 @@ namespace YGO
 			return wildCardMatch(attr, pattern);
 		});
 	}
+
+	bool Card::exec_once_each_turn() const {
+		return find(m_prog_attribute.begin(), m_prog_attribute.end(), '1') != m_prog_attribute.end();
+	}
+	bool Card::exec_at_beginning() const {
+		return find(m_prog_attribute.begin(), m_prog_attribute.end(), '^') != m_prog_attribute.end();
+	}
 	std::ostream& operator<<(std::ostream& os, const Card& card)
 	{
 		os << "name: " << card.m_name << ", count: " << card.m_count;

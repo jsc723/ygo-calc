@@ -6,6 +6,7 @@
 namespace YGO {
 	class CardCollection {
 	public:
+		virtual std::vector<Card> get_all() const = 0;
 		virtual std::vector<Card> front(int k) const = 0;
 		virtual int pop_front(int k) = 0;
 		virtual void push_front(const Card &to_push) = 0;
@@ -32,6 +33,10 @@ namespace YGO {
 		template<class RandomIt>
 		DefaultCardCollection(RandomIt begin, RandomIt end)
 		: cards(begin, end) {
+		}
+
+		virtual std::vector<Card> get_all()const {
+			return std::vector<Card>(cards.begin(), cards.end());
 		}
 
 		virtual std::vector<Card> front(int k) const {

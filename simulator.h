@@ -23,6 +23,7 @@ namespace YGO {
 			t_string name;
 			std::vector<Combo> m_combos;
 			int m_start_card;
+			bool m_exec_program;
 			bool test(const std::vector<Card> cards);
 			void bind(Context& context);
 			void print(std::ostream& os);

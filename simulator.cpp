@@ -25,6 +25,9 @@ YGO::Simulator::Simulator(YAML::Node simulate)
 			auto start_card_node = topic_node["start-card"];
 			topic.m_start_card = start_card_node.IsDefined() ? start_card_node.as<int>() : 5;
 
+			auto exec_program_node = topic_node["exec-program"];
+			topic.m_exec_program = exec_program_node.IsDefined() ? exec_program_node.as<bool>() : false;
+
 			auto topic_combos_node = topic_node["combos"];
 			for (auto jt = topic_combos_node.begin(); jt != topic_combos_node.end(); ++jt)
 			{
@@ -85,9 +88,11 @@ void YGO::Simulator::run(const Deck& deck_template, Context& context)
 		
 		for (int i = 0; i < m_topics.size(); i++)
 		{
-			vector<Card> deck = deck_template.generate();
-			std::shuffle(deck.begin(), deck.end(), rd);
-			vector<Card> handCards(deck.begin(), deck.begin() + m_topics[i].m_start_card);
+			Game g(deck_template, m_topics[i].m_start_card);
+			if (m_topics[i].m_exec_program) {
+				g.run();
+			}
+			auto handCards = g.m_hand->get_all();
 			const int num_combo = m_topics[i].m_combos.size();
 
 			bool any_success = false;

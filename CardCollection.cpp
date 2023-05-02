@@ -5,12 +5,12 @@
 using namespace std;
 YGO::Card YGO::DefaultCardCollection::remove(int index)
 {
-	if (index >= 0) {
-		auto it = cards.erase(cards.begin() + index);
-		return *it;
+	if (index >= cards.size() || index < 0) {
+		panic("index out of range");
 	}
-	auto it = cards.erase(cards.end() + index);
-	return *it;
+	Card c = cards[index];
+	cards.erase(cards.begin() + index);
+	return c;
 }
 vector<YGO::Card> YGO::DefaultCardCollection::remove_all(vector<int> indices)
 {

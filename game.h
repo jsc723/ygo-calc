@@ -3,15 +3,19 @@
 #include <memory>
 #include <utility>
 #include <vector>
+#include <unordered_set>
 #include "CardCollection.h"
 #include "condition.h"
+
 
 namespace YGO {
 	
 	class Game
 	{
+		std::unordered_set<t_string> m_already_executed;
 	public:
-		Game(Deck &deck_template, int start_hand_cards, const std::vector<Condition*>& wanted_conds);
+		Game(const Deck &deck_template, int start_hand_cards);
+		void run();
 		bool execute_hand_card(int index, int opt);
 		std::vector<int> select_add_hand_card(const std::vector<Card>& cards, int k);
 		std::shared_ptr<CardCollection> m_deck;
@@ -21,6 +25,7 @@ namespace YGO {
 		std::shared_ptr<CardCollection> m_jyogai;
 		std::vector<Condition*> m_wanted_conds;
 		std::vector<bool> m_forbidden_funcs;
+		std::vector<bool> m_used_funcs;
 	};
 
 	namespace Yisp {
@@ -98,7 +103,7 @@ namespace YGO {
 		std::shared_ptr<Yisp::Object> execFunc(std::stringstream& s);
 		std::shared_ptr<Yisp::Number> execNumber(std::stringstream& s);
 		std::shared_ptr<Yisp::CardSet> execSet(std::stringstream& s);
-		std::shared_ptr<Yisp::Object> execCondition(std::stringstream& s);
+		std::shared_ptr<Yisp::Number> execCondition(std::stringstream& s);
 	public:
 		Executor(Game* game, std::shared_ptr<CardCollection> src, int card_index, int opt);
 		bool run();

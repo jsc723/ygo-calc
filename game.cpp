@@ -1,21 +1,60 @@
+#include <random>
+#include <unordered_set>
 #include "game.h"
 #include "global.h"
 #include "context.h"
-#include <unordered_set>
+
 
 using namespace std;
 namespace YGO {
 	Yisp::Void Yisp::Void::void_;
-	Game::Game(Deck& deck_template, int start_hand_cards, const vector<Condition*> & wanted_conds)
-		:m_wanted_conds(wanted_conds)
+	Game::Game(const Deck& deck_template, int start_hand_cards)
+		:m_forbidden_funcs(256), m_used_funcs(256)
 	{
+		
 		vector<Card> deck_cards = deck_template.generate();
+
+		std::random_device rd;
+		std::shuffle(deck_cards.begin(), deck_cards.end(), rd);
+
 		vector<Card> hand_cards(deck_cards.begin(), deck_cards.begin() + start_hand_cards);
 		m_deck = make_shared<DefaultCardCollection>(deck_cards.begin(), deck_cards.end());
 		m_hand = make_shared<DefaultCardCollection>(hand_cards.begin(), hand_cards.end());
 		m_field = make_shared<DefaultCardCollection>();
 		m_bochi = make_shared<DefaultCardCollection>();
 		m_jyogai = make_shared<DefaultCardCollection>();
+	}
+	void Game::run() {
+		int executed_count = 0;
+		for (;;)
+		{
+			bool cont = false;
+			for (int i = 0; i < m_hand->size(); i++) {
+				Card c = m_hand->get(i);
+				if (c.is_executable()) {
+					if (c.exec_once_each_turn()) {
+						if (m_already_executed.count(c.name())) {
+							continue;
+						}
+					}
+					if (c.exec_at_beginning() && executed_count != 0) {
+						continue;
+					}
+					bool cont = execute_hand_card(i, 0);
+					if (cont) {
+						//success to execute
+						cout << "executed card " << c.name() << " [" << c.description() << "]" << endl;
+						m_already_executed.insert(c.name());
+						executed_count++;
+						break;
+					}
+					//failed to execute, continue...
+				}
+			}
+			if (!cont) {
+				break;
+			}
+		}
 	}
 	std::vector<int> Game::select_add_hand_card(const vector<Card>& cards, int k)
 	{
@@ -107,6 +146,7 @@ namespace YGO {
 
 	shared_ptr<Yisp::Object> Executor::execStatement(stringstream& s)
 	{
+		cout << "execStatement(" + s.str() + ")" << endl;
 		char c = s.peek();
 		if (c == '@') {
 			Card card = m_src->remove(m_card_index);
@@ -116,7 +156,11 @@ namespace YGO {
 		if (c == '/') {
 			//condition
 			s.get(c);
-			return execCondition(s);
+			shared_ptr<Yisp::Number> res = execCondition(s);
+			if (res->num == 0) {
+				m_cond_break = true;
+				return Yisp::Void::get();
+			}
 		}
 
 		return execExpr(s);
@@ -174,7 +218,7 @@ namespace YGO {
 			m_cond_break = true;
 			return Yisp::Void::get();
 		}
-
+		
 		switch (c)
 		{
 		//draw
@@ -230,7 +274,7 @@ namespace YGO {
 			if (params.size() != 2) {
 				panic("wrong number of parameters for =");
 			}
-			char x = std::dynamic_pointer_cast<Yisp::String>(params[0])->s[0];
+			char x = std::dynamic_pointer_cast<Yisp::String>(params[0])->s[1];
 			int val = std::dynamic_pointer_cast<Yisp::Number>(params[1])->num;
 			m_vars[x] = val;
 		}
@@ -239,6 +283,7 @@ namespace YGO {
 		default:
 			panic("unknown function : " + c);
 		}
+		m_game->m_used_funcs[c] = true;
 		return Yisp::Void::get();
 	}
 
@@ -299,8 +344,8 @@ namespace YGO {
 	{
 		remove_space(s);
 		t_string w = read_while(s, [this](char c) {
-			return m_set_allowed_chars[c];
-			});
+			return c >= 0 && m_set_allowed_chars[c];
+		});
 		vector<t_string> ws = split(w, ".");
 		shared_ptr<CardCollection> collection = nullptr;
 
@@ -323,7 +368,7 @@ namespace YGO {
 			panic("unknown collection: " + ws[0]);
 		}
 		shared_ptr<Yisp::CardSet> card_set(make_shared<Yisp::CardSet>(collection));
-		//TODO
+
 		for (int i = 1; i < ws.size(); i++) {
 			auto w = ws[i];
 			if (w[0] >= '0' && w[0] <= '9') {
@@ -340,10 +385,22 @@ namespace YGO {
 		return card_set;
 	}
 
-	shared_ptr<Yisp::Object> Executor::execCondition(std::stringstream& s)
+	shared_ptr<Yisp::Number> Executor::execCondition(std::stringstream& s)
 	{
-		//TODO
-		return Yisp::Void::get();
+		//start from next char after '/'
+		char c;
+		c = s.peek();
+		if (c == '!') {
+			s.get(c);
+			auto res = execCondition(s)->num != 0;
+			return make_shared<Yisp::Number>(!res);
+		}
+		if (c == '%') {
+			s.get(c);
+			bool b = m_game->m_used_funcs['%'];
+			return make_shared<Yisp::Number>((int)b);
+		}
+		return execNumber(s);
 	}
 
 	YGO::Executor::Executor(Game* game, shared_ptr<CardCollection> src, int card_index, int opt)
@@ -362,7 +419,7 @@ namespace YGO {
 		m_set_allowed_chars['-'] = true;
 		m_set_allowed_chars[':'] = true;
 		m_set_allowed_chars['.'] = true;
-		m_set_allowed_chars['ÅI'] = true;
+		m_set_allowed_chars['!'] = true;
 	}
 
 	bool YGO::Executor::run()

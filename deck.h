@@ -22,11 +22,14 @@ namespace YGO {
 		Card& operator=(const Card &rhs) = default;
 		friend std::ostream& operator<<(std::ostream& os, const Card& card);
 		t_string name() const { return m_name; }
+		t_string description() const { return m_description; }
 		bool test_attribute(const t_string& attr) const;
 		bool test_attribute_wildcard(const t_string& pattern) const;
 		int count() const { return m_count; }
 		void set_count(int cnt) { m_count = cnt; }
-		t_string prog_attribute() { return m_prog_attribute; }
+		t_string prog_attribute() const { return m_prog_attribute; }
+		bool exec_once_each_turn() const;
+		bool exec_at_beginning() const;
 		t_string program() { return m_program; }
 		bool is_executable() const noexcept { return !m_program.empty(); }
 	};
