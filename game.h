@@ -2,7 +2,7 @@
 #include <sstream>
 #include <memory>
 #include <utility>
-#include <unordered_set>
+#include <vector>
 #include "CardCollection.h"
 #include "condition.h"
 
@@ -11,18 +11,20 @@ namespace YGO {
 	class Game
 	{
 	public:
-		Game(Deck &deck_template, int start_hand_cards, const std::unordered_set<Condition*>& good_conds);
+		Game(Deck &deck_template, int start_hand_cards, const std::vector<Condition*>& wanted_conds);
 		bool execute_hand_card(int index, int opt);
+		std::vector<int> select_add_hand_card(const std::vector<Card>& cards, int k);
 		std::shared_ptr<CardCollection> m_deck;
 		std::shared_ptr<CardCollection> m_hand;
 		std::shared_ptr<CardCollection> m_field;
 		std::shared_ptr<CardCollection> m_bochi;
 		std::shared_ptr<CardCollection> m_jyogai;
-		std::unordered_set<Condition*> m_good_conds;
+		std::vector<Condition*> m_wanted_conds;
 	};
 
 	namespace Yisp {
 		struct Object {
+		protected:
 			virtual void foo() {
 				std::cout << "hello" << std::endl;
 			}
@@ -51,19 +53,27 @@ namespace YGO {
 
 		struct CardSet : public Object {
 			std::shared_ptr<CardCollection> collection;
-			std::vector<int> cards;
-			CardSet() {}
-			CardSet(std::shared_ptr<CardCollection> clt): collection(clt) {
+			std::vector<int> cards_idx;
+			bool valid;
+			CardSet() :valid(true) {}
+			CardSet(std::shared_ptr<CardCollection> clt): valid(true), collection(clt) {
 				for (int i = 0; i < clt->size(); i++) {
-					cards.emplace_back(i);
+					cards_idx.emplace_back(i);
 				}
 			}
 			const Card& operator[](int i) {
-				return collection->get(cards[i]);
+				if (!valid) panic("use invalid carset");
+				return collection->get(cards_idx[i]);
+			}
+			size_t size() {
+				if (!valid) panic("use invalid carset");
+				return cards_idx.size();
 			}
 			void move_to_back(std::shared_ptr<CardCollection> dst);
+			void move_to_back(std::shared_ptr<CardCollection> dst, const std::vector<int> &indexs);
 			std::shared_ptr<CardSet> subset(int n);
 			std::shared_ptr<CardSet> subset(t_string cond);
+			std::vector<Card> get_cards();
 		};
 
 		struct String : public Object {

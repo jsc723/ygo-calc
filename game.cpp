@@ -1,12 +1,13 @@
 #include "game.h"
 #include "global.h"
 #include "context.h"
+#include <unordered_set>
 
 using namespace std;
 namespace YGO {
 	Yisp::Void Yisp::Void::void_;
-	Game::Game(Deck& deck_template, int start_hand_cards, const unordered_set<Condition*> &good_conds)
-		:m_good_conds(good_conds)
+	Game::Game(Deck& deck_template, int start_hand_cards, const vector<Condition*> & wanted_conds)
+		:m_wanted_conds(wanted_conds)
 	{
 		vector<Card> deck_cards = deck_template.generate();
 		vector<Card> hand_cards(deck_cards.begin(), deck_cards.begin() + start_hand_cards);
@@ -15,6 +16,26 @@ namespace YGO {
 		m_field = make_shared<DefaultCardCollection>();
 		m_bochi = make_shared<DefaultCardCollection>();
 		m_jyogai = make_shared<DefaultCardCollection>();
+	}
+	std::vector<int> Game::select_add_hand_card(const vector<Card>& cards, int k)
+	{
+		unordered_set<int> unselected_idx;
+		for (int i = 0; i < cards.size(); i++) {
+			unselected_idx.emplace(i);
+		}
+
+		vector<int> selected;
+		for (int t = 0; t < k; t++) {
+			for (auto it = m_wanted_conds.begin(); it != m_wanted_conds.end(); ++it) {
+				for (auto i : unselected_idx) {
+					if ((*it)->match(cards[i])) {
+						selected.emplace_back(i);
+						unselected_idx.erase(i);
+					}
+				}
+			}
+		}
+		return selected;
 	}
 
 	bool YGO::Game::execute_hand_card(int index, int opt)
@@ -25,32 +46,61 @@ namespace YGO {
 
 	void Yisp::CardSet::move_to_back(std::shared_ptr<CardCollection> dst) 
 	{
-		for (int i = (int)cards.size() - 1; i >= 0; i--) {
-			Card c = collection->remove(cards[i]);
-			dst->push_back(c);
-		}
+		if (!valid) panic("use invalid carset");
+		auto removed = collection->remove_all(cards_idx);
+		dst->push_back(removed);
+		valid = false;
 	}
+
+	void Yisp::CardSet::move_to_back(std::shared_ptr<CardCollection> dst, const std::vector<int>& indexs)
+	{
+		if (!valid) panic("use invalid carset");
+
+		vector<int> collection_idx_to_remove;
+		for (auto i : indexs) {
+			collection_idx_to_remove.emplace_back(cards_idx[i]);
+		}
+		auto removed = collection->remove_all(collection_idx_to_remove);
+		dst->push_back(removed);
+
+		valid = false;
+	}
+
 	shared_ptr<Yisp::CardSet> Yisp::CardSet::subset(int n)
 	{
+		if (!valid) panic("use invalid carset");
 		shared_ptr<Yisp::CardSet> sub = make_shared<Yisp::CardSet>();
 		sub->collection = collection;
-		for (int i = 0; i < n && i < cards.size(); i++) {
-			sub->cards.push_back(cards[i]);
+		for (int i = 0; i < n && i < cards_idx.size(); i++) {
+			sub->cards_idx.push_back(cards_idx[i]);
 		}
+		valid = false;
 		return sub;
 	}
 	shared_ptr<Yisp::CardSet> Yisp::CardSet::subset(t_string cond)
 	{
+		if (!valid) panic("use invalid carset");
 		shared_ptr<Yisp::CardSet> sub = make_shared<Yisp::CardSet>();
 		sub->collection = collection;
 		Condition* cond_p = Utils::parseSingle(cond);
-		for (int idx : cards) {
+		for (int idx : cards_idx) {
 			if (cond_p->match(collection->get(idx))) {
-				sub->cards.push_back(idx);
+				sub->cards_idx.push_back(idx);
 			}
 		}
 		delete cond_p;
+		valid = false;
 		return sub;
+	}
+
+	vector<Card> Yisp::CardSet::get_cards()
+	{
+		if (!valid) panic("use invalid carset");
+		vector<Card> cards;
+		for (auto i : cards_idx) {
+			cards.emplace_back(collection->get(i));
+		}
+		return cards;
 	}
 
 
@@ -153,7 +203,15 @@ namespace YGO {
 		//select
 		case '$':
 		{
-
+			if (params.size() != 3) {
+				panic("wrong number of parameters for %");
+			}
+			auto src = std::dynamic_pointer_cast<Yisp::CardSet>(params[0]);
+			int cnt = std::dynamic_pointer_cast<Yisp::Number>(params[1])->num;
+			auto dst = std::dynamic_pointer_cast<Yisp::CardSet>(params[2]);
+			auto to_select = src->get_cards();
+			auto selected_idxs = m_game->select_add_hand_card(to_select, cnt);
+			src->move_to_back(dst->collection, selected_idxs);
 		}
 		break;
 		//forbid
