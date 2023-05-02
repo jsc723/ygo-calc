@@ -39,7 +39,11 @@ namespace YGO {
 			Number(int n) : num(n) {}
 		};
 		struct CardSet : public Object {
-			CardCollection* c;
+			std::shared_ptr<CardCollection> c;
+		};
+		struct String : public Object {
+			t_string s;
+			String(const t_string& s) : s(s) {}
 		};
 	}
 
@@ -49,9 +53,15 @@ namespace YGO {
 		std::shared_ptr<CardCollection> m_src;
 		int m_card_index;
 		int m_opt;
+		bool m_cond_break;
+		std::vector<int> m_vars;
+		std::vector<bool> m_set_allowed_chars;
 		std::shared_ptr<Yisp::Object> execStatement(std::stringstream& s);
 		std::shared_ptr<Yisp::Object> execExpr(std::stringstream& s);
+		std::shared_ptr<Yisp::Object> execFunc(std::stringstream& s);
 		std::shared_ptr<Yisp::Number> execNumber(std::stringstream& s);
+		std::shared_ptr<Yisp::CardSet> execSet(std::stringstream& s);
+		std::shared_ptr<Yisp::Object> execCondition(std::stringstream& s);
 	public:
 		Executor(Game* game, std::shared_ptr<CardCollection> src, int card_index, int opt);
 		bool run();

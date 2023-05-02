@@ -78,3 +78,22 @@ void YGO::trim(std::string& s) {
 	rtrim(s);
 	ltrim(s);
 }
+
+void remove_space(std::stringstream& ss) {
+	while (std::isspace(ss.peek())) {
+		ss.ignore();
+	}
+}
+
+std::string read_while(std::stringstream& s, std::function<bool(char c)> pred) {
+	std::string w;
+	while (true) {
+		char c = s.peek();
+		if (c == std::char_traits<char>::eof() || pred(c)) {
+			break;
+		}
+		w += c;
+		s.get();
+	}
+	return w;
+}

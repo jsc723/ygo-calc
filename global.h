@@ -3,6 +3,9 @@
 #include <cstdlib>
 #include <iostream>
 #include <vector>
+#include <sstream>
+#include <functional>
+#include <string>
 namespace YGO
 {
 	using t_string = std::string;
@@ -18,5 +21,6 @@ namespace YGO
 	void ltrim(std::string& s);
 	void rtrim(std::string& s);
 	void trim(std::string& s);
-
+	void remove_space(std::stringstream& ss);
+	std::string read_while(std::stringstream& s, std::function<bool(char c)> pred);
 }

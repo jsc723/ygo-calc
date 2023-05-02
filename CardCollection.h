@@ -17,6 +17,7 @@ namespace YGO {
 		virtual void push_back(const Card& to_push) = 0;
 		virtual int push_back(std::vector<Card>& to_push) = 0;
 		virtual void shuffle() = 0;
+		virtual size_t size() const = 0;
 	};
 	class DefaultCardCollection : public CardCollection {
 		std::deque<Card> cards;
@@ -93,6 +94,10 @@ namespace YGO {
 		}
 
 		virtual void shuffle();
+
+		virtual size_t size() const {
+			return cards.size();
+		}
 	};
 }
 
