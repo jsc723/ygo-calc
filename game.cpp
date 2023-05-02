@@ -21,7 +21,15 @@ namespace YGO {
 		return e.run();
 	}
 
-	
+	void Yisp::CardSet::move_to_back(std::shared_ptr<CardCollection> dst) 
+	{
+		for (int i = (int)cards.size() - 1; i >= 0; i--) {
+			Card c = collection->remove(cards[i]);
+			dst->push_back(c);
+		}
+	}
+
+
 
 	shared_ptr<Yisp::Object> Executor::execStatement(stringstream& s)
 	{
@@ -51,13 +59,13 @@ namespace YGO {
 		if (c >= '0' && c <= '9' || c >= 'a' && c <= 'z' || c == '|') {
 			return execNumber(s);
 		}
-		
+
 		if (c == '(') {
 			c = s.get();
 			remove_space(s);
 			char c2 = s.peek();
 			// number case 2
-			if (c2 == '>' || c2 == '+' || c2 == '-') {
+			if (c2 == '>' || c2 == '+' || c2 == '-' || c2 == 'r') {
 				s.putback(c);
 				return execNumber(s);
 			}
@@ -67,7 +75,7 @@ namespace YGO {
 		else { // String
 			string str = read_while(s, [this](char c) {
 				return !std::isspace(c) && c != '(' && c != ')';
-			});
+				});
 			return make_shared<Yisp::String>(str);
 		}
 		return Yisp::Void::get();
@@ -87,49 +95,62 @@ namespace YGO {
 		}
 		s.get(); //read ')'
 
-		switch (c) 
+		//check if the function is forbidden
+		if (m_forbidden_funcs[c]) {
+			m_cond_break = true;
+			return Yisp::Void::get();
+		}
+
+		switch (c)
 		{
+		//draw
 		case '%':
-			{
-				if (params.size() != 1) {
-					panic("wrong number of parameters for %");
-				}
-				int draw_count = std::dynamic_pointer_cast<Yisp::Number>(params[0])->num;
-				auto drawed_cards = m_game->m_deck->front(draw_count);
-				m_game->m_deck->pop_front(draw_count);
-				m_game->m_hand->push_back(drawed_cards);
+		{
+			if (params.size() != 1) {
+				panic("wrong number of parameters for %");
 			}
-			break;
+			int draw_count = std::dynamic_pointer_cast<Yisp::Number>(params[0])->num;
+			auto drawed_cards = m_game->m_deck->front(draw_count);
+			m_game->m_deck->pop_front(draw_count);
+			m_game->m_hand->push_back(drawed_cards);
+		}
+		break;
+		//move
 		case '#':
-			{
-
+		{
+			if (params.size() != 2) {
+				panic("wrong number of parameters for %");
 			}
-			break;
+			auto src = std::dynamic_pointer_cast<Yisp::CardSet>(params[0]);
+			auto dst = std::dynamic_pointer_cast<Yisp::CardSet>(params[1]);
+			src->move_to_back(dst->collection);
+		}
+		break;
+		//select
 		case '$':
-			{
+		{
 
-			}
-			break;
+		}
+		break;
+		//forbid
 		case '!':
-			{
+		{
 
-			}
-			break;
+		}
+		break;
+		//optional
 		case '?':
-			{
+		{
 
-			}
-			break;
+		}
+		break;
+		//assign
 		case '=':
-			{
+		{
 
-			}
-			break;
-		case 'r':
-			{
+		}
+		break;
 
-			}
-			break;
 		default:
 			panic("unknown function : " + c);
 		}
@@ -151,11 +172,11 @@ namespace YGO {
 			return make_shared<Yisp::Number>(m_vars[c]);
 		}
 		if (c == '|') {
-			shared_ptr<Yisp::CardSet> card_set = execSet(s);
+			shared_ptr<Yisp::CardSet> card_set(execSet(s));
 			if (s.get() != '|') {
 				panic("| not match in execNumber");
 			}
-			return make_shared<Yisp::Number>(card_set->c->size());
+			return make_shared<Yisp::Number>(card_set->collection->size());
 		}
 		if (c == '(') {
 			remove_space(s);
@@ -175,6 +196,9 @@ namespace YGO {
 			case '>':
 				res = num1 > num2;
 				break;
+			case 'r':
+				res = random_int(num1, num2);
+				break;
 			}
 			remove_space(s);
 			s.get(c);
@@ -189,10 +213,9 @@ namespace YGO {
 	std::shared_ptr<Yisp::CardSet> Executor::execSet(std::stringstream& s)
 	{
 		remove_space(s);
-		shared_ptr<Yisp::CardSet> card_set = make_shared<Yisp::CardSet>();
 		t_string w = read_while(s, [this](char c) {
 			return m_set_allowed_chars[c];
-		});
+			});
 		shared_ptr<CardCollection> collection = nullptr;
 		if (w[0] == 'H') {
 			collection = m_game->m_hand;
@@ -210,7 +233,7 @@ namespace YGO {
 			collection = m_game->m_jyogai;
 		}
 		//TODO
-		card_set->c = collection;
+		shared_ptr<Yisp::CardSet> card_set = make_shared<Yisp::CardSet>(collection);
 		return card_set;
 	}
 

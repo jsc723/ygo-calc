@@ -1,4 +1,5 @@
 #include "global.h"
+#include <random>
 
 //ref: https://leetcode.com/problems/wildcard-matching/solution/
 bool YGO::wildCardMatch(const t_string& s, const t_string& p)
@@ -79,13 +80,13 @@ void YGO::trim(std::string& s) {
 	ltrim(s);
 }
 
-void remove_space(std::stringstream& ss) {
+void YGO::remove_space(std::stringstream& ss) {
 	while (std::isspace(ss.peek())) {
 		ss.ignore();
 	}
 }
 
-std::string read_while(std::stringstream& s, std::function<bool(char c)> pred) {
+std::string YGO::read_while(std::stringstream& s, std::function<bool(char c)> pred) {
 	std::string w;
 	while (true) {
 		char c = s.peek();
@@ -96,4 +97,11 @@ std::string read_while(std::stringstream& s, std::function<bool(char c)> pred) {
 		s.get();
 	}
 	return w;
+}
+
+int YGO::random_int(int low, int high) {
+	static std::random_device rd;
+	static std::mt19937 gen(rd());
+	std::uniform_int_distribution<> dis(low, high);
+	return dis(gen);
 }

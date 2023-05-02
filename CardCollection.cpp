@@ -10,7 +10,7 @@ YGO::Card YGO::DefaultCardCollection::remove(int index)
 	auto it = cards.erase(cards.end() + index);
 	return *it;
 }
-YGO::Card YGO::DefaultCardCollection::get(int index)
+const YGO::Card& YGO::DefaultCardCollection::get(int index)
 {
 	if (index >= 0) {
 		return cards[index];

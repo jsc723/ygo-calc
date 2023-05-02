@@ -2,6 +2,7 @@
 #include "CardCollection.h"
 #include <sstream>
 #include <memory>
+#include <utility>
 namespace YGO {
 	
 	class Game
@@ -18,7 +19,11 @@ namespace YGO {
 
 	namespace Yisp {
 		struct Object {
+			virtual void foo() {
+				std::cout << "hello" << std::endl;
+			}
 		};
+
 		struct Void : public Object {
 		protected:
 			Void() {
@@ -34,13 +39,26 @@ namespace YGO {
 				return ptr; 
 			}
 		};
+
 		struct Number : public Object {
 			int num;
 			Number(int n) : num(n) {}
 		};
+
 		struct CardSet : public Object {
-			std::shared_ptr<CardCollection> c;
+			std::shared_ptr<CardCollection> collection;
+			std::vector<int> cards;
+			CardSet(std::shared_ptr<CardCollection> clt): collection(clt) {
+				for (int i = 0; i < clt->size(); i++) {
+					cards.emplace_back(i);
+				}
+			}
+			const Card& operator[](int i) {
+				return collection->get(cards[i]);
+			}
+			void move_to_back(std::shared_ptr<CardCollection> dst);
 		};
+
 		struct String : public Object {
 			t_string s;
 			String(const t_string& s) : s(s) {}
@@ -56,6 +74,7 @@ namespace YGO {
 		bool m_cond_break;
 		std::vector<int> m_vars;
 		std::vector<bool> m_set_allowed_chars;
+		std::vector<bool> m_forbidden_funcs;
 		std::shared_ptr<Yisp::Object> execStatement(std::stringstream& s);
 		std::shared_ptr<Yisp::Object> execExpr(std::stringstream& s);
 		std::shared_ptr<Yisp::Object> execFunc(std::stringstream& s);

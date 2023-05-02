@@ -6,6 +6,7 @@
 #include <sstream>
 #include <functional>
 #include <string>
+
 namespace YGO
 {
 	using t_string = std::string;
@@ -23,4 +24,6 @@ namespace YGO
 	void trim(std::string& s);
 	void remove_space(std::stringstream& ss);
 	std::string read_while(std::stringstream& s, std::function<bool(char c)> pred);
+
+	int random_int(int low, int high);
 }
