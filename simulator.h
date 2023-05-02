@@ -10,8 +10,6 @@ namespace YGO {
 	{
 		int m_count;
 		bool m_separate;
-		int m_start_card;
-		int m_turns;
 		struct Combo {
 			t_string name;
 			double score = 1.0;
@@ -24,6 +22,7 @@ namespace YGO {
 		struct Topic {
 			t_string name;
 			std::vector<Combo> m_combos;
+			int m_start_card;
 			bool test(const std::vector<Card> cards);
 			void bind(Context& context);
 			void print(std::ostream& os);
