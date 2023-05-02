@@ -1,10 +1,12 @@
 #include "game.h"
 #include "global.h"
+#include "context.h"
 
 using namespace std;
 namespace YGO {
 	Yisp::Void Yisp::Void::void_;
-	Game::Game(Deck& deck_template, int start_hand_cards)
+	Game::Game(Deck& deck_template, int start_hand_cards, const unordered_set<Condition*> &good_conds)
+		:m_good_conds(good_conds)
 	{
 		vector<Card> deck_cards = deck_template.generate();
 		vector<Card> hand_cards(deck_cards.begin(), deck_cards.begin() + start_hand_cards);
@@ -27,6 +29,28 @@ namespace YGO {
 			Card c = collection->remove(cards[i]);
 			dst->push_back(c);
 		}
+	}
+	shared_ptr<Yisp::CardSet> Yisp::CardSet::subset(int n)
+	{
+		shared_ptr<Yisp::CardSet> sub = make_shared<Yisp::CardSet>();
+		sub->collection = collection;
+		for (int i = 0; i < n && i < cards.size(); i++) {
+			sub->cards.push_back(cards[i]);
+		}
+		return sub;
+	}
+	shared_ptr<Yisp::CardSet> Yisp::CardSet::subset(t_string cond)
+	{
+		shared_ptr<Yisp::CardSet> sub = make_shared<Yisp::CardSet>();
+		sub->collection = collection;
+		Condition* cond_p = Utils::parseSingle(cond);
+		for (int idx : cards) {
+			if (cond_p->match(collection->get(idx))) {
+				sub->cards.push_back(idx);
+			}
+		}
+		delete cond_p;
+		return sub;
 	}
 
 
@@ -216,24 +240,42 @@ namespace YGO {
 		t_string w = read_while(s, [this](char c) {
 			return m_set_allowed_chars[c];
 			});
+		vector<t_string> ws = split(w, ".");
 		shared_ptr<CardCollection> collection = nullptr;
-		if (w[0] == 'H') {
+
+		if (ws[0] == "H") {
 			collection = m_game->m_hand;
 		}
-		else if (w[0] == 'D') {
+		else if (ws[0] == "D") {
 			collection = m_game->m_deck;
 		}
-		else if (w[0] == 'B') {
+		else if (ws[0] == "B") {
 			collection = m_game->m_bochi;
 		}
-		else if (w[0] == 'F') {
+		else if (ws[0] == "F") {
 			collection = m_game->m_field;
 		}
-		else if (w[0] == 'J') {
+		else if (ws[0] == "J") {
 			collection = m_game->m_jyogai;
 		}
+		else {
+			panic("unknown collection: " + ws[0]);
+		}
+		shared_ptr<Yisp::CardSet> card_set(make_shared<Yisp::CardSet>(collection));
 		//TODO
-		shared_ptr<Yisp::CardSet> card_set = make_shared<Yisp::CardSet>(collection);
+		for (int i = 1; i < ws.size(); i++) {
+			auto w = ws[i];
+			if (w[0] >= '0' && w[0] <= '9') {
+				stringstream temp_ss;
+				temp_ss << w;
+				int u;
+				temp_ss >> u;
+				card_set = card_set->subset(u);
+			}
+			else {
+				card_set = card_set->subset(w);
+			}
+		}
 		return card_set;
 	}
 
@@ -259,6 +301,7 @@ namespace YGO {
 		m_set_allowed_chars['-'] = true;
 		m_set_allowed_chars[':'] = true;
 		m_set_allowed_chars['.'] = true;
+		m_set_allowed_chars['ÅI'] = true;
 	}
 
 	bool YGO::Executor::run()

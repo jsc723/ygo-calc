@@ -35,8 +35,10 @@ namespace YGO
 
 	class Utils
 	{
-		static Condition* parseSingle(Context& context, const t_string& cond);
 	public:
+		static Condition* parseSingle(const t_string& cond);
+		static Condition* parseSingle(Context& context, const t_string& cond);
+
 		static std::vector<t_string> strSplit(const t_string& s);
 		static Condition* parse(Context& context, const t_string& cond);
 	};

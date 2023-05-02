@@ -31,7 +31,7 @@ deck:
 
         ketsudann:
             count: 3
-            attribute: ['H', 'rice-like']
+            attribute: ['H', 'sushi', 'rice-like']
         umisen:
             count: 1
             attribute: ['H', 'sushi']
@@ -72,7 +72,7 @@ deck:
             program: '/!%;@;($ D.6 1 H);(! %)'
         kotuchi:
             description: '万宝槌'
-            program: '@;(= x |H.U|);(# H.U D);(% x)'
+            program: '(= x (- |H.!a:sushi| 1));/(> x 1);@;(# H.!a:sushi D);(% x)'
         munorengoku:
             description: '无之炼狱'
             program: '/(> |H| 2);@;(% 1)'
@@ -95,7 +95,7 @@ deck:
         Sushi-Non-Rice: Sushi !a:rice
         Kowakuma: a:kowakuma a:M
 simulate:
-    count: 5000
+    count: 10
     start_card: 5
     turns: 3
     tests:

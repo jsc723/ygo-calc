@@ -1,20 +1,24 @@
 #pragma once
-#include "CardCollection.h"
 #include <sstream>
 #include <memory>
 #include <utility>
+#include <unordered_set>
+#include "CardCollection.h"
+#include "condition.h"
+
 namespace YGO {
 	
 	class Game
 	{
 	public:
-		Game(Deck &deck_template, int start_hand_cards);
+		Game(Deck &deck_template, int start_hand_cards, const std::unordered_set<Condition*>& good_conds);
 		bool execute_hand_card(int index, int opt);
 		std::shared_ptr<CardCollection> m_deck;
 		std::shared_ptr<CardCollection> m_hand;
 		std::shared_ptr<CardCollection> m_field;
 		std::shared_ptr<CardCollection> m_bochi;
 		std::shared_ptr<CardCollection> m_jyogai;
+		std::unordered_set<Condition*> m_good_conds;
 	};
 
 	namespace Yisp {
@@ -48,6 +52,7 @@ namespace YGO {
 		struct CardSet : public Object {
 			std::shared_ptr<CardCollection> collection;
 			std::vector<int> cards;
+			CardSet() {}
 			CardSet(std::shared_ptr<CardCollection> clt): collection(clt) {
 				for (int i = 0; i < clt->size(); i++) {
 					cards.emplace_back(i);
@@ -57,6 +62,8 @@ namespace YGO {
 				return collection->get(cards[i]);
 			}
 			void move_to_back(std::shared_ptr<CardCollection> dst);
+			std::shared_ptr<CardSet> subset(int n);
+			std::shared_ptr<CardSet> subset(t_string cond);
 		};
 
 		struct String : public Object {

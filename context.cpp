@@ -27,7 +27,31 @@ namespace YGO
 			}
 		}
 		
-		panic("Cannot parse condition: " + cond);
+		panic("Cannot parse condition [2]: " + cond);
+	}
+	Condition* Utils::parseSingle(const t_string& cond)
+	{
+		Condition* res = nullptr;
+		if (cond.size() > 1 && cond[0] == '!')
+		{
+			auto child = parseSingle(cond.substr(1));
+			return new NotCondition(child);
+		}
+		if (cond.size() > 2 && cond[1] == ':')
+		{
+			switch (cond[0])
+			{
+			case 'a':
+				return new CardAttributeCondition(cond.substr(2));
+			case 'A':
+				return new CardAttributeWildcardCondition(cond.substr(2));
+			}
+		}
+		else {
+			return new CardNameCondition(cond);
+		}
+
+		panic("Cannot parse condition [1]: " + cond);
 	}
 	std::vector<t_string> Utils::strSplit(const t_string& s)
 	{
