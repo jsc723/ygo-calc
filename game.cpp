@@ -87,18 +87,48 @@ namespace YGO {
 		}
 		s.get(); //read ')'
 
-		switch (c) {
+		switch (c) 
+		{
 		case '%':
+			{
+				if (params.size() != 1) {
+					panic("wrong number of parameters for %");
+				}
+				int draw_count = std::dynamic_pointer_cast<Yisp::Number>(params[0])->num;
+				auto drawed_cards = m_game->m_deck->front(draw_count);
+				m_game->m_deck->pop_front(draw_count);
+				m_game->m_hand->push_back(drawed_cards);
+			}
 			break;
 		case '#':
+			{
+
+			}
 			break;
 		case '$':
+			{
+
+			}
 			break;
 		case '!':
+			{
+
+			}
 			break;
 		case '?':
+			{
+
+			}
 			break;
 		case '=':
+			{
+
+			}
+			break;
+		case 'r':
+			{
+
+			}
 			break;
 		default:
 			panic("unknown function : " + c);
