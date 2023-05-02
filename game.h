@@ -20,6 +20,7 @@ namespace YGO {
 		std::shared_ptr<CardCollection> m_bochi;
 		std::shared_ptr<CardCollection> m_jyogai;
 		std::vector<Condition*> m_wanted_conds;
+		std::vector<bool> m_forbidden_funcs;
 	};
 
 	namespace Yisp {
@@ -91,7 +92,7 @@ namespace YGO {
 		bool m_cond_break;
 		std::vector<int> m_vars;
 		std::vector<bool> m_set_allowed_chars;
-		std::vector<bool> m_forbidden_funcs;
+		
 		std::shared_ptr<Yisp::Object> execStatement(std::stringstream& s);
 		std::shared_ptr<Yisp::Object> execExpr(std::stringstream& s);
 		std::shared_ptr<Yisp::Object> execFunc(std::stringstream& s);

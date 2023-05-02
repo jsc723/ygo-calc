@@ -170,7 +170,7 @@ namespace YGO {
 		s.get(); //read ')'
 
 		//check if the function is forbidden
-		if (m_forbidden_funcs[c]) {
+		if (m_game->m_forbidden_funcs[c]) {
 			m_cond_break = true;
 			return Yisp::Void::get();
 		}
@@ -221,7 +221,7 @@ namespace YGO {
 				panic("wrong number of parameters for !");
 			}
 			auto op = std::dynamic_pointer_cast<Yisp::String>(params[0])->s;
-			m_forbidden_funcs[op[0]] = true;
+			m_game->m_forbidden_funcs[op[0]] = true;
 		}
 		break;
 		//assign
