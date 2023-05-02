@@ -193,7 +193,7 @@ namespace YGO {
 		case '#':
 		{
 			if (params.size() != 2) {
-				panic("wrong number of parameters for %");
+				panic("wrong number of parameters for #");
 			}
 			auto src = std::dynamic_pointer_cast<Yisp::CardSet>(params[0]);
 			auto dst = std::dynamic_pointer_cast<Yisp::CardSet>(params[1]);
@@ -204,7 +204,7 @@ namespace YGO {
 		case '$':
 		{
 			if (params.size() != 3) {
-				panic("wrong number of parameters for %");
+				panic("wrong number of parameters for $");
 			}
 			auto src = std::dynamic_pointer_cast<Yisp::CardSet>(params[0]);
 			int cnt = std::dynamic_pointer_cast<Yisp::Number>(params[1])->num;
@@ -217,19 +217,22 @@ namespace YGO {
 		//forbid
 		case '!':
 		{
-
-		}
-		break;
-		//optional
-		case '?':
-		{
-
+			if (params.size() != 1) {
+				panic("wrong number of parameters for !");
+			}
+			auto op = std::dynamic_pointer_cast<Yisp::String>(params[0])->s;
+			m_forbidden_funcs[op[0]] = true;
 		}
 		break;
 		//assign
 		case '=':
 		{
-
+			if (params.size() != 2) {
+				panic("wrong number of parameters for =");
+			}
+			char x = std::dynamic_pointer_cast<Yisp::String>(params[0])->s[0];
+			int val = std::dynamic_pointer_cast<Yisp::Number>(params[1])->num;
+			m_vars[x] = val;
 		}
 		break;
 

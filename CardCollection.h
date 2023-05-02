@@ -11,7 +11,7 @@ namespace YGO {
 		virtual void push_front(const Card &to_push) = 0;
 		virtual int push_front(std::vector<Card>& to_push) = 0;
 		virtual Card remove(int index) = 0;
-		virtual std::vector<Card> remove_all(const std::vector<int>& indices) = 0;
+		virtual std::vector<Card> remove_all(std::vector<int> indices) = 0;
 		virtual const Card& get(int index) = 0;
 		virtual std::vector<Card> back(int k) const = 0;
 		virtual int pop_back(int k) = 0;
@@ -63,7 +63,7 @@ namespace YGO {
 		}
 
 		virtual Card remove(int index);
-		virtual std::vector<Card> remove_all(const std::vector<int>& indices);
+		virtual std::vector<Card> remove_all(std::vector<int> indices);
 		virtual const Card &get(int index);
 
 		virtual std::vector<Card> back(int k) const {

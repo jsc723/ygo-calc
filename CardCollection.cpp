@@ -12,7 +12,7 @@ YGO::Card YGO::DefaultCardCollection::remove(int index)
 	auto it = cards.erase(cards.end() + index);
 	return *it;
 }
-vector<YGO::Card> YGO::DefaultCardCollection::remove_all(const vector<int>& indices)
+vector<YGO::Card> YGO::DefaultCardCollection::remove_all(vector<int> indices)
 {
 	std::sort(indices.begin(), indices.end());
 	int k = 0;

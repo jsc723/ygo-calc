@@ -81,7 +81,7 @@ deck:
             program: '@;(= x |H|);(# H B);(% x)'
         inochi-housatu:
             description: '削命'
-            program: '[1](# H.a:mahou F);(# H.a:trap F);(? (# H.a:M.1 F));/(> 4 |H|);@;(= x (- 3 |H|));(% x)'
+            program: '[1](# H.a:mahou F);(# H.a:trap F);(# H.a:M.1 F);/(> 4 |H|);@;(= x (- 3 |H|));(% x)'
         cup-of-ace:
             description: '圣杯A'
             program: '@;/(> (r 0 1) 0);(% 2)'
