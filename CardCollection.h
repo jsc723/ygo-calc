@@ -1,28 +1,31 @@
 #pragma once
 #include <vector>
-#include <deque>
+#include <list>
 #include <algorithm>
 #include "deck.h"
 namespace YGO {
+	using CardNode = std::list<Card>::iterator;
+
 	class CardCollection {
+
 	public:
-		virtual std::vector<Card> get_all() const = 0;
-		virtual std::vector<Card> front(int k) const = 0;
-		virtual int pop_front(int k) = 0;
-		virtual void push_front(const Card &to_push) = 0;
-		virtual int push_front(std::vector<Card>& to_push) = 0;
-		virtual Card remove(int index) = 0;
-		virtual std::vector<Card> remove_all(std::vector<int> indices) = 0;
-		virtual const Card& get(int index) = 0;
-		virtual std::vector<Card> back(int k) const = 0;
-		virtual int pop_back(int k) = 0;
-		virtual void push_back(const Card& to_push) = 0;
-		virtual int push_back(std::vector<Card>& to_push) = 0;
+		virtual CardNode begin() = 0;
+		virtual CardNode end() = 0;
+		virtual std::vector<Card> to_vector() const = 0;
+		virtual void pop_front(int k, std::list<Card> &dst) = 0;
+		virtual void push_front(std::list<Card> &other, CardNode &to_push) = 0;
+		virtual void push_front(std::list<Card>& to_push) = 0;
+		virtual void move_to(CardNode &card_node, std::list<Card>& dst) = 0;
+		virtual void move_to(CardNode& card_node, CardCollection& dst) = 0;
+		virtual void pop_back(int k, std::list<Card>& dst) = 0;
+		virtual void push_back(std::list<Card>& other, CardNode& to_push) = 0;
+		virtual void push_back(std::list<Card>& to_push) = 0;
 		virtual void shuffle() = 0;
 		virtual size_t size() const = 0;
 	};
+
 	class DefaultCardCollection : public CardCollection {
-		std::deque<Card> cards;
+		std::list<Card> cards;
 	public:
 		DefaultCardCollection() = default;
 		DefaultCardCollection(const DefaultCardCollection& other) = default;
@@ -35,69 +38,56 @@ namespace YGO {
 		: cards(begin, end) {
 		}
 
-		virtual std::vector<Card> get_all()const {
+		virtual CardNode begin() override {
+			return cards.begin();
+		}
+		virtual CardNode end() override {
+			return cards.end();
+		}
+
+		virtual std::vector<Card> to_vector() const override {
 			return std::vector<Card>(cards.begin(), cards.end());
 		}
 
-		virtual std::vector<Card> front(int k) const {
-			std::vector<Card> res;
-			for (int i = 0; i < k && i < cards.size(); i++) {
-				res.push_back(cards[i]);
-			}
-			return res;
-		};
 
-		virtual int pop_front(int k) {
-			int cnt = 0;
-			for (int i = 0; i < k && i < cards.size(); i++) {
-				cnt++;
-				cards.pop_front();
+		virtual void pop_front(int k, std::list<Card>& dst) override {
+			k = std::min<int>(k, cards.size());
+			auto end = cards.begin();
+			while (k-- > 0) {
+				end++;
 			}
-			return cnt;
+			dst.splice(dst.end(), cards, cards.begin(), end);
 		}
 
-		void push_front(const Card& to_push) {
-			cards.push_front(to_push);
+		void push_front(std::list<Card>& other, CardNode& to_push) override {
+			cards.splice(cards.begin(), other, to_push);
 		}
 
-		virtual int push_front(std::vector<Card>& to_push) {
-			for (auto c : to_push) {
-				cards.push_front(c);
+		virtual void push_front(std::list<Card>& other) override {
+			cards.splice(cards.begin(), other);
+		}
+
+		virtual void move_to(CardNode& card_node, std::list<Card>& dst) override;
+		virtual void move_to(CardNode& card_node, CardCollection& dst) override;
+
+
+		virtual void pop_back(int k, std::list<Card>& dst) override {
+			k = std::min<int>(k, cards.size());
+			auto start = cards.end();
+			while (k-- > 0) {
+				start--;
 			}
-			return to_push.size();
+			dst.splice(dst.end(), cards, start, cards.end());
 		}
 
-		virtual Card remove(int index);
-		virtual std::vector<Card> remove_all(std::vector<int> indices);
-		virtual const Card &get(int index);
-
-		virtual std::vector<Card> back(int k) const {
-			std::vector<Card> res;
-			int start = std::max<int>(0, (int)cards.size() - k);
-			for (int i = start; i < cards.size(); i++) {
-				res.push_back(cards[i]);
-			}
-			return res;
+		virtual void push_back(std::list<Card>& other, CardNode& to_push) override
+		{
+			cards.splice(cards.end(), other, to_push);
 		}
 
-		virtual int pop_back(int k) {
-			int cnt = 0;
-			while (cards.size() > 0) {
-				cnt++;
-				cards.pop_back();
-			}
-			return cnt;
-		}
-
-		void push_back(const Card& to_push) {
-			cards.push_back(to_push);
-		}
-
-		virtual int push_back(std::vector<Card>& to_push) {
-			for (auto c : to_push) {
-				cards.push_back(c);
-			}
-			return to_push.size();
+		virtual void push_back(std::list<Card>& other) override
+		{
+			cards.splice(cards.end(), other);
 		}
 
 		virtual void shuffle();

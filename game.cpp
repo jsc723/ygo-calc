@@ -39,8 +39,8 @@ namespace YGO {
 		while(cont)
 		{
 			cont = false;
-			for (int i = 0; i < m_hand->size(); i++) {
-				Card c = m_hand->get(i);
+			for (auto it = m_hand->begin(); it != m_hand->end(); ++it) {
+				Card c = *it;
 				if (c.is_executable()) {
 					if (c.exec_once_each_turn()) {
 						if (m_already_executed.count(c.name())) {
@@ -52,7 +52,7 @@ namespace YGO {
 						//cout << "cannot exec because of [^]" << endl;
 						continue;
 					}
-					cont = execute_hand_card(i, 0);
+					cont = execute_hand_card(it, 0);
 					if (cont) {
 						//success to execute
 						//cout << "executed card " << c.name() << " [" << c.description() << "]" << endl;
@@ -60,105 +60,76 @@ namespace YGO {
 						executed_count++;
 						break;
 					}
-					//failed to execute, continue...
+					//failed to execute, continue
+					
 				}
 			}
 		}
 	}
-	vector<int>  Game::select_add_hand_card(const vector<Card>& cards, int k)
+	void Game::select_add_hand_card(Yisp::CardSet& to_select, int k, std::shared_ptr<CardCollection>& dst)
 	{
-		unordered_set<int> unselected_idx;
-		for (int i = 0; i < cards.size(); i++) {
-			unselected_idx.emplace(i);
-		}
-
-		vector<int> selected;
+		list<Card> selected;
 		for (int t = 0; t < k; t++) {
-			for (auto it = m_wanted_conds.begin(); it != m_wanted_conds.end(); ++it) {
-				for (auto i : unselected_idx) {
-					if ((*it)->match(cards[i])) {
-						selected.emplace_back(i);
-						unselected_idx.erase(i);
+			for (auto cond_it = m_wanted_conds.begin(); cond_it != m_wanted_conds.end(); ++cond_it) {
+				for (auto card_node_it = to_select.cards_its.begin(); card_node_it != to_select.cards_its.end(); card_node_it++ ) {
+					if ((*cond_it)->match(**card_node_it)) {
+						to_select.collection->move_to(*card_node_it, selected);
+						to_select.cards_its.erase(card_node_it);
 						goto next_card;
 					}
 				}
 			}
 			//fallback
-			selected.emplace_back(*unselected_idx.begin());
-			unselected_idx.erase(unselected_idx.begin());
+			to_select.collection->move_to(*to_select.cards_its.begin(), selected);
+			to_select.cards_its.erase(to_select.cards_its.begin());
+			
 		next_card:;
 		}
 		if (selected.size() != k) {
 			panic("bug: selected size unmatched");
 		}
-		return selected;
+		dst->push_back(selected);
 	}
 
-	bool YGO::Game::execute_hand_card(int index, int opt)
+	bool YGO::Game::execute_hand_card(CardNode it, int opt)
 	{
-		Executor e(this, this->m_hand, index, opt);
+		Executor e(this, this->m_hand, it, opt);
 		return e.run();
 	}
 
 	void Yisp::CardSet::move_to_back(std::shared_ptr<CardCollection> dst) 
 	{
-		if (!valid) panic("use invalid carset");
-		auto removed = collection->remove_all(cards_idx);
-		dst->push_back(removed);
-		valid = false;
-	}
-
-	void Yisp::CardSet::move_to_back(std::shared_ptr<CardCollection> dst, const std::vector<int>& indexs)
-	{
-		if (!valid) panic("use invalid carset");
-
-		vector<int> collection_idx_to_remove;
-		for (auto i : indexs) {
-			collection_idx_to_remove.emplace_back(cards_idx[i]);
+		list<Card> tmp;
+		for (auto it : cards_its) {
+			collection->move_to(it, tmp);
 		}
-		auto removed = collection->remove_all(collection_idx_to_remove);
-		dst->push_back(removed);
-
-		valid = false;
+		dst->push_back(tmp);
 	}
 
 	shared_ptr<Yisp::CardSet> Yisp::CardSet::subset(int n)
 	{
-		if (!valid) panic("use invalid carset");
 		shared_ptr<Yisp::CardSet> sub = make_shared<Yisp::CardSet>();
 		sub->collection = collection;
-		for (int i = 0; i < n && i < cards_idx.size(); i++) {
-			sub->cards_idx.push_back(cards_idx[i]);
+		auto card_node_it = cards_its.begin();
+		for (int i = 0; i < n && i < cards_its.size(); i++) {
+			sub->cards_its.push_back(*card_node_it);
+			card_node_it++;
 		}
-		valid = false;
 		return sub;
 	}
 	shared_ptr<Yisp::CardSet> Yisp::CardSet::subset(t_string cond)
 	{
-		if (!valid) panic("use invalid carset");
 		shared_ptr<Yisp::CardSet> sub = make_shared<Yisp::CardSet>();
 		sub->collection = collection;
 		Condition* cond_p = Utils::parseSingle(cond);
-		for (int idx : cards_idx) {
-			if (cond_p->match(collection->get(idx))) {
-				sub->cards_idx.push_back(idx);
+		for (auto it : cards_its) {
+			if (cond_p->match(*it)) {
+				sub->cards_its.push_back(it);
 			}
 		}
 		delete cond_p;
-		valid = false;
 		return sub;
 	}
-
-	vector<Card> Yisp::CardSet::get_cards()
-	{
-		if (!valid) panic("use invalid carset");
-		vector<Card> cards;
-		for (auto i : cards_idx) {
-			cards.emplace_back(collection->get(i));
-		}
-		return cards;
-	}
-
 
 
 	shared_ptr<Yisp::Object> Executor::execStatement(stringstream& s)
@@ -166,8 +137,8 @@ namespace YGO {
 		//cout << "execStatement(" + s.str() + ")" << endl;
 		char c = s.peek();
 		if (c == '@') {
-			Card card = m_src->remove(m_card_index);
-			m_game->m_bochi->push_front(card);
+			m_activated = true;
+			m_src->move_to(m_card_it, *(m_game->m_bochi));
 			return Yisp::Void::get();
 		}
 		if (c == '/') {
@@ -245,8 +216,8 @@ namespace YGO {
 				panic("wrong number of parameters for %");
 			}
 			int draw_count = std::dynamic_pointer_cast<Yisp::Number>(params[0])->num;
-			auto drawed_cards = m_game->m_deck->front(draw_count);
-			m_game->m_deck->pop_front(draw_count);
+			list<Card> drawed_cards;
+			m_game->m_deck->pop_front(draw_count, drawed_cards);
 			m_game->m_hand->push_back(drawed_cards);
 		}
 		break;
@@ -270,10 +241,8 @@ namespace YGO {
 			auto src = std::dynamic_pointer_cast<Yisp::CardSet>(params[0]);
 			int cnt = std::dynamic_pointer_cast<Yisp::Number>(params[1])->num;
 			auto dst = std::dynamic_pointer_cast<Yisp::CardSet>(params[2]);
-			auto to_select = src->get_cards();
-			auto selected_idxs = m_game->select_add_hand_card(to_select, cnt);
-			src->move_to_back(dst->collection, selected_idxs);
-			src->collection->shuffle(); //TODO
+			m_game->select_add_hand_card(*src, cnt, dst->collection);
+			src->move_to_back(src->collection);
 		}
 		break;
 		//forbid
@@ -422,9 +391,9 @@ namespace YGO {
 		return execNumber(s);
 	}
 
-	YGO::Executor::Executor(Game* game, shared_ptr<CardCollection> src, int card_index, int opt)
-		:m_game(game), m_src(src), m_card_index(card_index), m_opt(opt), m_cond_break(false), m_vars(128),
-		m_set_allowed_chars(256)
+	YGO::Executor::Executor(Game* game, shared_ptr<CardCollection> src, CardNode card_it, int opt)
+		:m_game(game), m_src(src), m_card_it(card_it), m_opt(opt), m_cond_break(false),
+			m_activated(false), m_vars(128), m_set_allowed_chars(256)
 	{
 		for (char c = 'A'; c <= 'Z'; c++) {
 			m_set_allowed_chars[c] = true;
@@ -443,16 +412,16 @@ namespace YGO {
 
 	bool YGO::Executor::run()
 	{
-		Card card = m_src->get(m_card_index);
+		Card card = *m_card_it;
 		vector<t_string> statements = split(card.program(), ";");
 		for (auto statement : statements) {
 			trim(statement);
 			stringstream ss(statement);
 			execStatement(ss);
 			if (m_cond_break) {
-				return false;
+				break;
 			}
 		}
-		return true;
+		return m_activated;
 	}
 }

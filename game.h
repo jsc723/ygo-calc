@@ -10,24 +10,6 @@
 #include "simulator.h"
 
 namespace YGO {
-	
-	class Game
-	{
-		std::unordered_set<t_string> m_already_executed;
-	public:
-		Game(const Deck &deck_template, int start_hand_cards, const YGO::condition_set_t&wanted_conds);
-		void run();
-		bool execute_hand_card(int index, int opt);
-		std::vector<int> select_add_hand_card(const std::vector<Card>& cards, int k);
-		std::shared_ptr<CardCollection> m_deck;
-		std::shared_ptr<CardCollection> m_hand;
-		std::shared_ptr<CardCollection> m_field;
-		std::shared_ptr<CardCollection> m_bochi;
-		std::shared_ptr<CardCollection> m_jyogai;
-		YGO::condition_set_t m_wanted_conds;
-		std::vector<bool> m_forbidden_funcs;
-		std::vector<bool> m_used_funcs;
-	};
 
 	namespace Yisp {
 		struct Object {
@@ -49,7 +31,7 @@ namespace YGO {
 			void operator=(const Void&) = delete;
 			static std::shared_ptr<Void> get() {
 				static std::shared_ptr<Void> ptr(&void_);
-				return ptr; 
+				return ptr;
 			}
 		};
 
@@ -60,27 +42,19 @@ namespace YGO {
 
 		struct CardSet : public Object {
 			std::shared_ptr<CardCollection> collection;
-			std::vector<int> cards_idx;
-			bool valid;
-			CardSet() :valid(true) {}
-			CardSet(std::shared_ptr<CardCollection> clt): valid(true), collection(clt) {
-				for (int i = 0; i < clt->size(); i++) {
-					cards_idx.emplace_back(i);
+			std::list<CardNode> cards_its;
+			CardSet() {}
+			CardSet(std::shared_ptr<CardCollection> clt) : collection(clt) {
+				for (auto it = clt->begin(); it != clt->end(); it++) {
+					cards_its.push_back(it);
 				}
 			}
-			const Card& operator[](int i) {
-				if (!valid) panic("use invalid carset");
-				return collection->get(cards_idx[i]);
-			}
 			size_t size() {
-				if (!valid) panic("use invalid carset");
-				return cards_idx.size();
+				return cards_its.size();
 			}
 			void move_to_back(std::shared_ptr<CardCollection> dst);
-			void move_to_back(std::shared_ptr<CardCollection> dst, const std::vector<int> &indexs);
 			std::shared_ptr<CardSet> subset(int n);
 			std::shared_ptr<CardSet> subset(t_string cond);
-			std::vector<Card> get_cards();
 		};
 
 		struct String : public Object {
@@ -89,13 +63,34 @@ namespace YGO {
 		};
 	}
 
+	class Game
+	{
+		std::unordered_set<t_string> m_already_executed;
+	public:
+		Game(const Deck &deck_template, int start_hand_cards, const YGO::condition_set_t&wanted_conds);
+		void run();
+		bool execute_hand_card(CardNode it, int opt);
+		void select_add_hand_card(Yisp::CardSet& to_select, int k, std::shared_ptr<CardCollection> &dst);
+		std::shared_ptr<CardCollection> m_deck;
+		std::shared_ptr<CardCollection> m_hand;
+		std::shared_ptr<CardCollection> m_field;
+		std::shared_ptr<CardCollection> m_bochi;
+		std::shared_ptr<CardCollection> m_jyogai;
+		YGO::condition_set_t m_wanted_conds;
+		std::vector<bool> m_forbidden_funcs;
+		std::vector<bool> m_used_funcs;
+	};
+
+	
+
 	class Executor
 	{
 		Game* m_game;
 		std::shared_ptr<CardCollection> m_src;
-		int m_card_index;
+		CardNode m_card_it;
 		int m_opt;
 		bool m_cond_break;
+		bool m_activated;
 		std::vector<int> m_vars;
 		std::vector<bool> m_set_allowed_chars;
 		
@@ -106,7 +101,7 @@ namespace YGO {
 		std::shared_ptr<Yisp::CardSet> execSet(std::stringstream& s);
 		std::shared_ptr<Yisp::Number> execCondition(std::stringstream& s);
 	public:
-		Executor(Game* game, std::shared_ptr<CardCollection> src, int card_index, int opt);
+		Executor(Game* game, std::shared_ptr<CardCollection> src, CardNode card_it, int opt);
 		bool run();
 	};
 }

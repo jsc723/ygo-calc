@@ -3,43 +3,25 @@
 #include <algorithm>
 #include <vector>
 using namespace std;
-YGO::Card YGO::DefaultCardCollection::remove(int index)
+void YGO::DefaultCardCollection::move_to(YGO::CardNode& card_node, std::list<YGO::Card>& dst)
 {
-	if (index >= cards.size() || index < 0) {
-		panic("index out of range");
-	}
-	Card c = cards[index];
-	cards.erase(cards.begin() + index);
-	return c;
+	dst.splice(dst.begin(), cards, card_node);
 }
-vector<YGO::Card> YGO::DefaultCardCollection::remove_all(vector<int> indices)
+void YGO::DefaultCardCollection::move_to(YGO::CardNode& card_node, YGO::CardCollection& dst)
 {
-	std::sort(indices.begin(), indices.end());
-	int k = 0;
-	vector<Card> removed;
-	deque<Card> new_cards;
-	for (int i = 0; i < cards.size(); i++) {
-		if (k < indices.size() && i == indices[k]) {
-			removed.emplace_back(cards[i]);
-			k++;
-		}
-		else {
-			new_cards.emplace_back(cards[i]);
-		}
-	}
-	cards = new_cards;
-	return removed;
+	std::list<Card> tmp;
+	move_to(card_node, tmp);
+	dst.push_back(tmp);
 }
-const YGO::Card& YGO::DefaultCardCollection::get(int index)
-{
-	if (index >= 0) {
-		return cards[index];
-	}
-	auto it = cards.end() + index;
-	return *it;
-}
+
 void YGO::DefaultCardCollection::shuffle()
 {
 	std::random_device rd;
-	std::shuffle(cards.begin(), cards.end(), rd);
+	int k = cards.size() / 2;
+	auto mid = cards.begin();
+	std::advance(mid, k);
+	std::list<Card> tmp;
+	tmp.splice(tmp.begin(), cards, cards.begin(), mid);
+	cards.splice(cards.end(), tmp);
+	//std::shuffle(cards.begin(), cards.end(), rd);
 }

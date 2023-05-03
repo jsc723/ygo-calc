@@ -104,7 +104,7 @@ void YGO::Simulator::run(const Deck& deck_template, Context& context)
 			if (m_topics[i].m_exec_program) {
 				g.run();
 			}
-			auto handCards = g.m_hand->get_all();
+			auto handCards = g.m_hand->to_vector();
 			const int num_combo = m_topics[i].m_combos.size();
 
 			bool any_success = false;
