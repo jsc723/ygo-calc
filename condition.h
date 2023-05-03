@@ -17,6 +17,7 @@ namespace YGO
 		virtual bool operator<(const Condition& other) const {
 			return this < &other;
 		}
+		virtual ~Condition() {}
 	};
 
 	class ConditionPtrCompare {
@@ -116,6 +117,9 @@ namespace YGO
 			}
 			return false;
 		}
+		virtual ~NotCondition() override {
+			delete child;
+		}
 	};
 
 	class AndCondition: public Condition
@@ -161,6 +165,11 @@ namespace YGO
 				return true;
 			}
 			return false;
+		}
+		virtual ~AndCondition() override {
+			for (auto c : children) {
+				delete c;
+			}
 		}
 	};
 

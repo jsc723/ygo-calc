@@ -58,38 +58,38 @@ deck:
         others:
             count: 2
 
-        # qyou-tan-tubo:
-        #     count: 3
-        #     description: '强贪壶'
-        #     program: '[1]\(> |D| 11);(# D.10 J);@;(% 2)'
-        # qyou-ken-tubo:
-        #     count: 3
-        #     description: '强谦壶'
-        #     program: '[1]@;($ D.6 1 H)'
-        # qyou-kin-tubo:
-        #     count: 3
-        #     description: '强金壶'
-        #     program: '[^]@;(% 2);(! %)'
-        # kin-ken-tubo:
-        #     count: 1
-        #     description: '金谦壶'
-        #     program: '[1]@;($ D.6 1 H);(! %)'
-        # kotuchi:
-        #     count: 3
-        #     description: '万宝槌'
-        #     program: '(= "x (- |H.!a:sushi| 1));/(> x 1);@;(# H.!a:sushi D);(% x)'
-        # munorengoku:
-        #     count: 1
-        #     description: '无之炼狱'
-        #     program: '/(> |H| 2);@;(% 1)'
-        # tehuda-masatu:
-        #     count: 1
-        #     description: '手牌抹杀'
-        #     program: '@;(= "x |H|);(# H B);(% x)'
-        # inochi-housatu:
-        #     count: 3
-        #     description: '削命'
-        #     program: '[1](= "x |H.a:mahou|);(= "y |H.a:trap|);(= "z (> |H.a:mahou| 0));(= "k (+ x (+ y z)));(= "h (- |H| k));\(> 4 h);@;(% (- 3 h))'
+        qyou-tan-tubo:
+            count: 3
+            description: '强贪壶'
+            program: '[1]\(> |D| 11);(# D.10 J);@;(% 2)'
+        qyou-ken-tubo:
+            count: 3
+            description: '强谦壶'
+            program: '[1]@;($ D.6 1 H)'
+        qyou-kin-tubo:
+            count: 3
+            description: '强金壶'
+            program: '[^]@;(% 2);(! %)'
+        kin-ken-tubo:
+            count: 1
+            description: '金谦壶'
+            program: '[1]@;($ D.6 1 H);(! %)'
+        kotuchi:
+            count: 3
+            description: '万宝槌'
+            program: '(= "x (- |H.!a:sushi| 1));/(> x 1);@;(# H.!a:sushi D);(% x)'
+        munorengoku:
+            count: 1
+            description: '无之炼狱'
+            program: '/(> |H| 2);@;(% 1)'
+        tehuda-masatu:
+            count: 1
+            description: '手牌抹杀'
+            program: '@;(= "x |H|);(# H B);(% x)'
+        inochi-housatu:
+            count: 3
+            description: '削命'
+            program: '[1](= "x |H.a:mahou| );(= "y |H.a:trap|);(= "z (> |H.a:M| 0));(= "k (+ x (+ y z)));(= "h (- |H| k));\(> 4 h);@;(% (- 3 h))'
         cup-of-ace:
             count: 3
             description: '圣杯A'

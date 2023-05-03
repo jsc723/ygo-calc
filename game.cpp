@@ -33,7 +33,7 @@ namespace YGO {
 		m_jyogai = make_shared<DefaultCardCollection>();
 	}
 	void Game::run() {
-		cout << "-----------run-------------" << endl;
+		//cout << "-----------run-------------" << endl;
 		int executed_count = 0;
 		bool cont = true;
 		while(cont)
@@ -44,18 +44,18 @@ namespace YGO {
 				if (c.is_executable()) {
 					if (c.exec_once_each_turn()) {
 						if (m_already_executed.count(c.name())) {
-							cout << "cannot exec because of [1]" << endl;
+							//cout << "cannot exec because of [1]" << endl;
 							continue;
 						}
 					}
 					if (c.exec_at_beginning() && executed_count != 0) {
-						cout << "cannot exec because of [^]" << endl;
+						//cout << "cannot exec because of [^]" << endl;
 						continue;
 					}
 					cont = execute_hand_card(i, 0);
 					if (cont) {
 						//success to execute
-						cout << "executed card " << c.name() << " [" << c.description() << "]" << endl;
+						//cout << "executed card " << c.name() << " [" << c.description() << "]" << endl;
 						m_already_executed.insert(c.name());
 						executed_count++;
 						break;
@@ -163,7 +163,7 @@ namespace YGO {
 
 	shared_ptr<Yisp::Object> Executor::execStatement(stringstream& s)
 	{
-		cout << "execStatement(" + s.str() + ")" << endl;
+		//cout << "execStatement(" + s.str() + ")" << endl;
 		char c = s.peek();
 		if (c == '@') {
 			Card card = m_src->remove(m_card_index);
@@ -321,6 +321,7 @@ namespace YGO {
 		}
 		if (c == '|') {
 			shared_ptr<Yisp::CardSet> card_set(execSet(s));
+			remove_space(s);
 			if (s.get() != '|') {
 				panic("| not match in execNumber");
 			}
