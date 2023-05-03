@@ -10,6 +10,23 @@ namespace YGO
 	public:
 		virtual bool match(const Card& card) const = 0;
 		virtual void print(std::ostream& os) const = 0;
+		virtual bool operator==(const Condition& other) const = 0;
+		virtual bool operator!=(const Condition& other) const {
+			return !(*this == other);
+		}
+		virtual bool operator<(const Condition& other) const {
+			return this < &other;
+		}
+	};
+
+	class ConditionPtrCompare {
+	public:
+		bool operator()(const Condition* a, const Condition* b) const {
+			if (*a == *b) {
+				return false;
+			}
+			return *a < *b;
+		}
 	};
 
 	class CardNameCondition : public Condition
@@ -24,6 +41,13 @@ namespace YGO
 		void print(std::ostream& os) const override
 		{
 			os << "name==" << m_name;
+		}
+		bool operator==(const Condition& other) const override
+		{
+			if (const CardNameCondition* c = dynamic_cast<const CardNameCondition*>(&other)) {
+				return m_name == c->m_name;
+			}
+			return false;
 		}
 	};
 
@@ -40,6 +64,13 @@ namespace YGO
 		{
 			os << "attr=" << m_attr;
 		}
+		bool operator==(const Condition& other) const override
+		{
+			if (const CardAttributeCondition* c = dynamic_cast<const CardAttributeCondition*>(&other)) {
+				return m_attr == c->m_attr;
+			}
+			return false;
+		}
 	};
 
 	class CardAttributeWildcardCondition : public Condition
@@ -54,6 +85,13 @@ namespace YGO
 		void print(std::ostream& os) const override
 		{
 			os << "attr~" << m_pattern;
+		}
+		bool operator==(const Condition& other) const override
+		{
+			if (const CardAttributeWildcardCondition* c = dynamic_cast<const CardAttributeWildcardCondition*>(&other)) {
+				return m_pattern == c->m_pattern;
+			}
+			return false;
 		}
 	};
 
@@ -70,6 +108,13 @@ namespace YGO
 		{
 			os << "!";
 			child->print(os);
+		}
+		bool operator==(const Condition& other) const override
+		{
+			if (const NotCondition* c = dynamic_cast<const NotCondition*>(&other)) {
+				return *child == *(c->child);
+			}
+			return false;
 		}
 	};
 
@@ -101,6 +146,21 @@ namespace YGO
 				os << " && ";
 			}
 			children.back()->print(os);
+		}
+		bool operator==(const Condition& other) const override
+		{
+			if (const AndCondition* c = dynamic_cast<const AndCondition*>(&other)) {
+				if (children.size() != c->children.size()) {
+					return false;
+				}
+				for (int i = 0; i < children.size(); i++) {
+					if (*children[i] != *(c->children[i])) {
+						return false;
+					}
+				}
+				return true;
+			}
+			return false;
 		}
 	};
 

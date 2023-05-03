@@ -8,8 +8,8 @@
 using namespace std;
 namespace YGO {
 	Yisp::Void Yisp::Void::void_;
-	Game::Game(const Deck& deck_template, int start_hand_cards)
-		:m_forbidden_funcs(256), m_used_funcs(256)
+	Game::Game(const Deck& deck_template, int start_hand_cards, const std::vector<Condition*>& wanted_conds)
+		:m_forbidden_funcs(256), m_used_funcs(256), m_wanted_conds(wanted_conds)
 	{
 		
 		vector<Card> deck_cards = deck_template.generate();
@@ -18,7 +18,7 @@ namespace YGO {
 		std::shuffle(deck_cards.begin(), deck_cards.end(), rd);
 
 		vector<Card> hand_cards(deck_cards.begin(), deck_cards.begin() + start_hand_cards);
-		m_deck = make_shared<DefaultCardCollection>(deck_cards.begin(), deck_cards.end());
+		m_deck = make_shared<DefaultCardCollection>(deck_cards.begin() + start_hand_cards, deck_cards.end());
 		m_hand = make_shared<DefaultCardCollection>(hand_cards.begin(), hand_cards.end());
 		m_field = make_shared<DefaultCardCollection>();
 		m_bochi = make_shared<DefaultCardCollection>();
@@ -56,7 +56,7 @@ namespace YGO {
 			}
 		}
 	}
-	std::vector<int> Game::select_add_hand_card(const vector<Card>& cards, int k)
+	vector<int>  Game::select_add_hand_card(const vector<Card>& cards, int k)
 	{
 		unordered_set<int> unselected_idx;
 		for (int i = 0; i < cards.size(); i++) {
@@ -70,9 +70,11 @@ namespace YGO {
 					if ((*it)->match(cards[i])) {
 						selected.emplace_back(i);
 						unselected_idx.erase(i);
+						goto next_card;
 					}
 				}
 			}
+		next_card:;
 		}
 		return selected;
 	}
@@ -256,6 +258,7 @@ namespace YGO {
 			auto to_select = src->get_cards();
 			auto selected_idxs = m_game->select_add_hand_card(to_select, cnt);
 			src->move_to_back(dst->collection, selected_idxs);
+			src->collection->shuffle(); //TODO
 		}
 		break;
 		//forbid

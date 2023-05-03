@@ -61,7 +61,7 @@ namespace YGO {
 		}
 
 		virtual int push_front(std::vector<Card>& to_push) {
-			for (auto c : cards) {
+			for (auto c : to_push) {
 				cards.push_front(c);
 			}
 			return to_push.size();
@@ -94,7 +94,7 @@ namespace YGO {
 		}
 
 		virtual int push_back(std::vector<Card>& to_push) {
-			for (auto c : cards) {
+			for (auto c : to_push) {
 				cards.push_back(c);
 			}
 			return to_push.size();

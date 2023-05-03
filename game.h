@@ -6,7 +6,7 @@
 #include <unordered_set>
 #include "CardCollection.h"
 #include "condition.h"
-
+#include "simulator.h"
 
 namespace YGO {
 	
@@ -14,7 +14,7 @@ namespace YGO {
 	{
 		std::unordered_set<t_string> m_already_executed;
 	public:
-		Game(const Deck &deck_template, int start_hand_cards);
+		Game(const Deck &deck_template, int start_hand_cards, const std::vector<Condition *> &wanted_conds);
 		void run();
 		bool execute_hand_card(int index, int opt);
 		std::vector<int> select_add_hand_card(const std::vector<Card>& cards, int k);

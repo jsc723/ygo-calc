@@ -1,15 +1,27 @@
 #include "simulator.h"
+#include "game.h"
 #include <vector>
 #include <algorithm>
 #include <random>
 #include <chrono>
-#include "game.h"
+#include <set>
+
 using namespace std;
+
+vector<YGO::Condition*> YGO::Simulator::Topic::get_wanted_conds() {
+	set<YGO::Condition*, ConditionPtrCompare> res_set;
+	for (auto &combo : m_combos) {
+		for (auto p_cond : combo.conditions) {
+			res_set.emplace(p_cond);
+		}
+	}
+	return vector<YGO::Condition*>(res_set.begin(), res_set.end());
+}
 
 YGO::Simulator::Simulator(YAML::Node simulate)
 {
 	auto count_node = simulate["count"];
-	m_count = count_node.IsDefined() ? count_node.as<int>() : 50000;
+	m_count = count_node.IsDefined() ? count_node.as<int>() : 1000;
 	auto separate_node = simulate["separate"];
 	m_separate = separate_node.IsDefined() ? separate_node.as<bool>() : false;
 
@@ -88,7 +100,7 @@ void YGO::Simulator::run(const Deck& deck_template, Context& context)
 		
 		for (int i = 0; i < m_topics.size(); i++)
 		{
-			Game g(deck_template, m_topics[i].m_start_card);
+			Game g(deck_template, m_topics[i].m_start_card, m_topics[i].get_wanted_conds());
 			if (m_topics[i].m_exec_program) {
 				g.run();
 			}

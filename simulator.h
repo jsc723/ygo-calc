@@ -27,6 +27,7 @@ namespace YGO {
 			bool test(const std::vector<Card> cards);
 			void bind(Context& context);
 			void print(std::ostream& os);
+			std::vector<Condition*> get_wanted_conds();
 		};
 		std::vector<Topic> m_topics;
 	public:
