@@ -8,14 +8,14 @@
 
 using namespace std;
 
-vector<YGO::Condition*> YGO::Simulator::Topic::get_wanted_conds() {
-	set<YGO::Condition*, ConditionPtrCompare> res_set;
+YGO::condition_set_t YGO::Simulator::Topic::get_wanted_conds() {
+	condition_set_t res_set;
 	for (auto &combo : m_combos) {
 		for (auto p_cond : combo.conditions) {
 			res_set.emplace(p_cond);
 		}
 	}
-	return vector<YGO::Condition*>(res_set.begin(), res_set.end());
+	return res_set;
 }
 
 YGO::Simulator::Simulator(YAML::Node simulate)

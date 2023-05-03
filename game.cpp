@@ -8,7 +8,7 @@
 using namespace std;
 namespace YGO {
 	Yisp::Void Yisp::Void::void_;
-	Game::Game(const Deck& deck_template, int start_hand_cards, const std::vector<Condition*>& wanted_conds)
+	Game::Game(const Deck& deck_template, int start_hand_cards, const YGO::condition_set_t& wanted_conds)
 		:m_forbidden_funcs(256), m_used_funcs(256), m_wanted_conds(wanted_conds)
 	{
 		
@@ -18,6 +18,14 @@ namespace YGO {
 		std::shuffle(deck_cards.begin(), deck_cards.end(), rd);
 
 		vector<Card> hand_cards(deck_cards.begin(), deck_cards.begin() + start_hand_cards);
+		for (auto& c : hand_cards) {
+			for (auto cond : m_wanted_conds) {
+				if (cond->match(c)) {
+					m_wanted_conds.erase(cond);
+					break;
+				}
+			}
+		}
 		m_deck = make_shared<DefaultCardCollection>(deck_cards.begin() + start_hand_cards, deck_cards.end());
 		m_hand = make_shared<DefaultCardCollection>(hand_cards.begin(), hand_cards.end());
 		m_field = make_shared<DefaultCardCollection>();
@@ -25,22 +33,26 @@ namespace YGO {
 		m_jyogai = make_shared<DefaultCardCollection>();
 	}
 	void Game::run() {
+		cout << "-----------run-------------" << endl;
 		int executed_count = 0;
-		for (;;)
+		bool cont = true;
+		while(cont)
 		{
-			bool cont = false;
+			cont = false;
 			for (int i = 0; i < m_hand->size(); i++) {
 				Card c = m_hand->get(i);
 				if (c.is_executable()) {
 					if (c.exec_once_each_turn()) {
 						if (m_already_executed.count(c.name())) {
+							cout << "cannot exec because of [1]" << endl;
 							continue;
 						}
 					}
 					if (c.exec_at_beginning() && executed_count != 0) {
+						cout << "cannot exec because of [^]" << endl;
 						continue;
 					}
-					bool cont = execute_hand_card(i, 0);
+					cont = execute_hand_card(i, 0);
 					if (cont) {
 						//success to execute
 						cout << "executed card " << c.name() << " [" << c.description() << "]" << endl;
@@ -50,9 +62,6 @@ namespace YGO {
 					}
 					//failed to execute, continue...
 				}
-			}
-			if (!cont) {
-				break;
 			}
 		}
 	}
@@ -74,7 +83,13 @@ namespace YGO {
 					}
 				}
 			}
+			//fallback
+			selected.emplace_back(*unselected_idx.begin());
+			unselected_idx.erase(unselected_idx.begin());
 		next_card:;
+		}
+		if (selected.size() != k) {
+			panic("bug: selected size unmatched");
 		}
 		return selected;
 	}

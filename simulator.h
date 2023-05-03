@@ -6,6 +6,7 @@
 #include "context.h"
 #include "condition.h"
 namespace YGO {
+	using condition_set_t = std::set<YGO::Condition*, YGO::ConditionPtrCompare>;
 	class Simulator
 	{
 		int m_count;
@@ -27,7 +28,7 @@ namespace YGO {
 			bool test(const std::vector<Card> cards);
 			void bind(Context& context);
 			void print(std::ostream& os);
-			std::vector<Condition*> get_wanted_conds();
+			condition_set_t get_wanted_conds();
 		};
 		std::vector<Topic> m_topics;
 	public:
