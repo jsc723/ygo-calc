@@ -42,7 +42,7 @@ deck:
             attribute: ['M']
             description: '神巫'
             program: 
-              - '[1]/(> summon 0);(= summon (- summon 1));(# X F);@;(# D.a:bin.1 B)'
+              - '[1]/(> summon 0);(= summon (- summon 1));@;(# X F);(# D.a:bin.1 B);(if (> |H.xian-sheng| 0) (# D.3 B) ())'
         shijie:
             count: 2
             attribute: ['mahou']

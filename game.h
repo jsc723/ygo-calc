@@ -120,6 +120,7 @@ namespace YGO {
 		std::shared_ptr<Yisp::CardSet> execSet(std::stringstream& s);
 		std::shared_ptr<Yisp::String> execString(std::stringstream& s);
 		std::shared_ptr<Yisp::Number> execCondition(std::stringstream& s);
+		std::shared_ptr<Yisp::Object> execNothing(std::stringstream& s);
 	public:
 		Executor(Game* game, std::shared_ptr<CardCollection> src, CardNode card_it, int opt);
 		bool run();

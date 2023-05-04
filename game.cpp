@@ -121,7 +121,7 @@ namespace YGO {
 	}
 
 	std::shared_ptr<CardCollection> YGO::Game::find_card_position(CardNode card_it) {
-		for (auto c : { m_hand, m_bochi, m_field, m_jyogai, m_deck }) {
+		for (auto c : { m_hand, m_field, m_bochi, m_jyogai, m_deck }) {
 			for (auto it = c->begin(); it != c->end(); ++it) {
 				if (card_it == it) {
 					return c;
@@ -136,7 +136,7 @@ namespace YGO {
 	std::ostream& operator<<(std::ostream& os, const Yisp::CardSet& c) {
 		os << "{";
 		for (auto it : c.cards_its) {
-			os << it->print_name()  << ", ";
+			os << it->name()  << ", ";
 		}
 		os << "}";
 		return os;
@@ -221,6 +221,12 @@ namespace YGO {
 				s.putback(c);
 				return execNumber(s);
 			}
+			if (c2 == ')') {
+				// empty expression, do nothing
+				s.get();
+				return Yisp::Void::get();
+			}
+			
 			// function
 			return execFunc(s);
 		}
@@ -323,11 +329,53 @@ namespace YGO {
 				panic("error var name: " + x);
 			}
 		}
+		else if (f == "if") {
+			auto cond = execNumber(s);
+			remove_space(s);
+			if (cond->num) {
+				auto res = execExpr(s);
+				remove_space(s);
+				execNothing(s);
+				remove_space(s);
+				if (s.get() != ')') {
+					panic("Unmatched ) or wrong number of arguments: " + s.str());
+				}
+				return res;
+			}
+			else {
+				execNothing(s);
+				remove_space(s);
+				auto res = execExpr(s);
+				remove_space(s);
+				if (s.get() != ')') {
+					panic("Unmatched ) or wrong number of arguments: " + s.str());
+				}
+				return res;
+			}
+		}
 		else {
 			panic("unknown function : " + f);
 		}
 
 		m_game->m_used_funcs.insert(f);
+		return Yisp::Void::get();
+	}
+
+	std::shared_ptr<Yisp::Object> Executor::execNothing(std::stringstream& s)
+	{
+		int cnt = 0;
+		read_while(s, [&cnt](char c) {
+			if (c == '(') {
+				cnt++;
+			}
+			if (cnt == 0) {
+				return false;
+			}
+			if (c == ')') {
+				cnt--;
+			}
+			return true;
+		});
 		return Yisp::Void::get();
 	}
 
