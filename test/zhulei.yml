@@ -1,0 +1,47 @@
+
+deck:
+    cards:
+        zhulei-renyu-2:
+            count: 2
+            attribute: ['M', 'zhulei', 'renyu']
+            description: '2星人鱼'
+        zhulei-renyu-3:
+            count: 2
+            attribute: ['M', 'zhulei', 'renyu']
+            description: '3星人鱼'
+        zhulei-renyu-4:
+            count: 2
+            attribute: ['M', 'zhulei', 'renyu']
+            description: '4星人鱼'
+        zhulei-nanren:
+            count: 3
+            attribute: ['M', 'zhulei', 'nanren']
+            description: '珠泪男人'
+        gu-jian-bin:
+            count: 3
+            attribute: ['M', 'di-tian-shi', 'bin']
+            description: '古尖兵'
+            program: 
+              - '[1Hy]/(| (moved A OH OB) (moved A OD OB));/(> |OF:M| 0);(move X F);(move OF:M:1 OH)''
+              - '[1By]/(| (moved X H B) (moved X D B));(move D.5 B)'
+        gu-jian-bin:
+            count: 3
+            attribute: ['M', 'di-tian-shi', 'bin']
+            description: '古卫兵'
+            program: 
+              - '[1Hy]/(| (moved A OH OB) (moved A OD OB));(move X F);(move B:di-tian-shi:1 F)'
+              - '[1By]/(| (moved X H B) (moved X D B));(move D.5 B)'
+        shen-wu:
+            count: 2
+            attribute: ['M']
+            description: '神巫'
+            program: 
+              - '[1]/(> C 0);(= "C (- C 1));(move X F);@;(move D:bin:1 B)'
+    simulate:
+    count: 1000
+    tests:
+        test-expend:
+            exec-program: true
+            header: '(= summon 1)'
+            combos:
+                graveyard:

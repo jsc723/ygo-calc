@@ -83,27 +83,27 @@ deck:
         qyou-kin-tubo:
             count: 2
             description: '强金壶'
-            program: '[^]@;(% 2);(! %)'
+            program: '[^]@;(% 2);'
         kin-ken-tubo:
             count: 2
             description: '金谦壶'
-            program: '[1]/(> |D| 5);@;($ D.6 1 H);(! %)'
+            program: '[1]/(> |D| 5);@;($ D.6 1 H);(! %);'
         kotuchi:
             count: 2
             description: '万宝槌'
-            program: '(= "x (- |H.!a:sushi| 1));/(> x 1);@;(# H.!a:sushi D);(% x)'
+            program: '(= x (- |H.!a:sushi| 1));/(> x 1);@;(# H.!a:sushi D);(% x)'
         munorengoku:
             count: 2
             description: '无之炼狱'
             program: '/(> |H| 2);@;(% 1)'
         tehuda-masatu:
-            count: 2
+            count: 1
             description: '手牌抹杀'
-            program: '@;(= "x |H|);(# H B);(% x)'
+            program: '@;(= "xx |H|);(# H B);(% xx)'
         inochi-housatu:
             count: 2
             description: '削命'
-            program: '[1](= "x |H.a:mahou| );(= "y |H.a:trap|);(= "z (> |H.a:M| 0));(= "k (+ x (+ y z)));(= "h (- |H| k));/(> 4 h);@;(% (- 3 h))'
+            program: '[1](= x |H.a:mahou| );(= y |H.a:trap|);(= z (> |H.a:M| 0));(= k (+ x (+ y z)));(= h (- |H| k));/(> 4 h);@;(% (- 3 h))'
         cup-of-ace:
             count: 2
             description: '圣杯A'
@@ -122,6 +122,7 @@ simulate:
     tests:
         test-expend:
             exec-program: true
+            header: '(= Summon 1)'
             combos:
                 A1:
                     score: 3.5 #freshia(1.5) + 4 hand-card(0.5)

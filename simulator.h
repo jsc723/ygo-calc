@@ -20,20 +20,23 @@ namespace YGO {
 			void bind(Context& context);
 			void print(std::ostream& os);
 		};
+
+	public:
 		struct Topic {
 			t_string name;
 			std::vector<Combo> m_combos;
 			int m_start_card;
 			bool m_exec_program;
+			t_string m_header;
 			bool test(const std::vector<Card> cards);
 			void bind(Context& context);
 			void print(std::ostream& os);
-			condition_set_t get_wanted_conds();
+			condition_set_t get_wanted_conds() const;
 		};
 		std::vector<Topic> m_topics;
-	public:
 		Simulator(YAML::Node simulate);
 		void run(const Deck& deck, Context& context);
+
 	};
 }
 

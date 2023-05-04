@@ -8,7 +8,7 @@
 
 using namespace std;
 
-YGO::condition_set_t YGO::Simulator::Topic::get_wanted_conds() {
+YGO::condition_set_t YGO::Simulator::Topic::get_wanted_conds() const {
 	condition_set_t res_set;
 	for (auto &combo : m_combos) {
 		for (auto p_cond : combo.conditions) {
@@ -39,6 +39,9 @@ YGO::Simulator::Simulator(YAML::Node simulate)
 
 			auto exec_program_node = topic_node["exec-program"];
 			topic.m_exec_program = exec_program_node.IsDefined() ? exec_program_node.as<bool>() : false;
+
+			auto header_node = topic_node["header"];
+			topic.m_header = header_node.IsDefined() ? header_node.as<string>() : "";
 
 			auto topic_combos_node = topic_node["combos"];
 			for (auto jt = topic_combos_node.begin(); jt != topic_combos_node.end(); ++jt)
@@ -100,7 +103,7 @@ void YGO::Simulator::run(const Deck& deck_template, Context& context)
 		
 		for (int i = 0; i < m_topics.size(); i++)
 		{
-			Game g(deck_template, m_topics[i].m_start_card, m_topics[i].get_wanted_conds());
+			Game g(deck_template, m_topics[i]);
 			if (m_topics[i].m_exec_program) {
 				g.run();
 			}

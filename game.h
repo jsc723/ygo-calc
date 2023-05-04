@@ -67,18 +67,20 @@ namespace YGO {
 	{
 		std::unordered_set<t_string> m_already_executed;
 	public:
-		Game(const Deck &deck_template, int start_hand_cards, const YGO::condition_set_t&wanted_conds);
+		Game(const Deck &deck_template, const Simulator::Topic &topic);
 		void run();
 		bool execute_hand_card(CardNode it, int opt);
 		void select_add_hand_card(Yisp::CardSet& to_select, int k, std::shared_ptr<CardCollection> &dst);
+		t_string m_header;
 		std::shared_ptr<CardCollection> m_deck;
 		std::shared_ptr<CardCollection> m_hand;
 		std::shared_ptr<CardCollection> m_field;
 		std::shared_ptr<CardCollection> m_bochi;
 		std::shared_ptr<CardCollection> m_jyogai;
 		YGO::condition_set_t m_wanted_conds;
-		std::vector<bool> m_forbidden_funcs;
-		std::vector<bool> m_used_funcs;
+		std::unordered_set<t_string> m_forbidden_funcs;
+		std::unordered_set<t_string> m_used_funcs;
+		std::unordered_map<t_string, int> m_vars;
 	};
 
 	
@@ -93,15 +95,20 @@ namespace YGO {
 		bool m_activated;
 		std::vector<int> m_vars;
 		std::vector<bool> m_set_allowed_chars;
+
+		using parser_t = std::function<std::shared_ptr<Yisp::Object>(Executor*, std::stringstream&)>;
 		
 		std::shared_ptr<Yisp::Object> execStatement(std::stringstream& s);
 		std::shared_ptr<Yisp::Object> execExpr(std::stringstream& s);
+		std::vector< std::shared_ptr<Yisp::Object> > parseParams(std::stringstream& s, std::vector<parser_t> parserFuncs);
 		std::shared_ptr<Yisp::Object> execFunc(std::stringstream& s);
 		std::shared_ptr<Yisp::Number> execNumber(std::stringstream& s);
 		std::shared_ptr<Yisp::CardSet> execSet(std::stringstream& s);
+		std::shared_ptr<Yisp::String> execString(std::stringstream& s);
 		std::shared_ptr<Yisp::Number> execCondition(std::stringstream& s);
 	public:
 		Executor(Game* game, std::shared_ptr<CardCollection> src, CardNode card_it, int opt);
 		bool run();
+		bool run_header(t_string header);
 	};
 }
