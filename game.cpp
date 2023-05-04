@@ -219,6 +219,7 @@ namespace YGO {
 			list<Card> drawed_cards;
 			m_game->m_deck->pop_front(draw_count, drawed_cards);
 			m_game->m_hand->push_back(drawed_cards);
+			//printf("draw %d\n", draw_count);
 		}
 		break;
 		//move
@@ -229,6 +230,7 @@ namespace YGO {
 			}
 			auto src = std::dynamic_pointer_cast<Yisp::CardSet>(params[0]);
 			auto dst = std::dynamic_pointer_cast<Yisp::CardSet>(params[1]);
+			//printf("move %d\n", (int)src->size());
 			src->move_to_back(dst->collection);
 		}
 		break;
@@ -264,6 +266,7 @@ namespace YGO {
 			char x = std::dynamic_pointer_cast<Yisp::String>(params[0])->s[1];
 			int val = std::dynamic_pointer_cast<Yisp::Number>(params[1])->num;
 			m_vars[x] = val;
+			//printf("%c = %d\n", x, val);
 		}
 		break;
 
@@ -294,7 +297,7 @@ namespace YGO {
 			if (s.get() != '|') {
 				panic("| not match in execNumber");
 			}
-			return make_shared<Yisp::Number>(card_set->collection->size());
+			return make_shared<Yisp::Number>(card_set->size());
 		}
 		if (c == '(') {
 			remove_space(s);
@@ -412,6 +415,10 @@ namespace YGO {
 
 	bool YGO::Executor::run()
 	{
+		//printf("deck: %d, hand: %d\n", m_game->m_deck->size(), m_game->m_hand->size());
+		//for (auto it = m_game->m_hand->begin(); it != m_game->m_hand->end(); ++it) {
+		//	cout << *it << endl;
+		//}
 		Card card = *m_card_it;
 		vector<t_string> statements = split(card.program(), ";");
 		for (auto statement : statements) {

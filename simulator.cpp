@@ -180,7 +180,7 @@ bool YGO::Simulator::Combo::test(std::vector<Card> cards)
 
 void YGO::Simulator::Combo::print(ostream& os)
 {
-	os << name << ": ";
+	os << name << ": " << "; score: " << score << "; ";
 	for (auto cond : condition_strings)
 	{
 		os << cond << "  ";
@@ -207,7 +207,7 @@ void YGO::Simulator::Topic::bind(Context& context)
 
 void YGO::Simulator::Topic::print(std::ostream& os)
 {
-	os << name << ": ";
+	os << name << ": " << endl;
 	for (auto& comb : m_combos)
 	{
 		comb.print(os);
