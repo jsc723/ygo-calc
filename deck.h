@@ -6,6 +6,13 @@
 #include <iostream>
 #include "global.h"
 namespace YGO {
+	struct Effect
+	{
+		t_string m_prog_attribute;
+		t_string m_program;
+		bool exec_once_each_turn() const;
+		bool exec_at_beginning() const;
+	};
 
 	class Card
 	{
@@ -13,8 +20,7 @@ namespace YGO {
 		int m_count = 1;
 		std::vector<t_string> m_attribute;
 		t_string m_description;
-		t_string m_prog_attribute;
-		t_string m_program;
+		
 	public:
 		Card() = default;
 		Card(const Card& other) = default;
@@ -22,16 +28,15 @@ namespace YGO {
 		Card& operator=(const Card &rhs) = default;
 		friend std::ostream& operator<<(std::ostream& os, const Card& card);
 		t_string name() const { return m_name; }
+		t_string effect_name(int idx) const;
 		t_string description() const { return m_description; }
 		bool test_attribute(const t_string& attr) const;
 		bool test_attribute_wildcard(const t_string& pattern) const;
 		int count() const { return m_count; }
 		void set_count(int cnt) { m_count = cnt; }
-		t_string prog_attribute() const { return m_prog_attribute; }
 		bool exec_once_each_turn() const;
 		bool exec_at_beginning() const;
-		t_string program() { return m_program; }
-		bool is_executable() const noexcept { return !m_program.empty(); }
+		std::vector<Effect> m_effects;
 	};
 	std::ostream& operator<<(std::ostream& os, const Card& card);
 

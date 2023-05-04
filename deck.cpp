@@ -21,19 +21,24 @@ namespace YGO
 			m_description = description_node.as<t_string>();
 		}
 		auto& program_node = node["program"];
-		if (program_node.IsDefined()) {
-			auto prog_str = program_node.as<t_string>();
-			if (!prog_str.empty()) {
-				if (prog_str[0] == '[') {
-					int i = prog_str.find(']');
-					if (i == -1) {
-						panic("] not found");
+		if (program_node.IsDefined() && program_node.IsSequence()) {
+			for (int i = 0; i < program_node.size(); i++) {
+				auto prog_str = program_node[i].as<t_string>();
+				if (!prog_str.empty()) {
+					Effect e;
+					if (prog_str[0] == '[') {
+						int i = prog_str.find(']');
+						if (i == -1) {
+							panic("] not found");
+						}
+						e.m_prog_attribute = prog_str.substr(1, i - 1);
+						prog_str = prog_str.substr(i + 1);
 					}
-					m_prog_attribute = prog_str.substr(1, i - 1);
-					prog_str = prog_str.substr(i + 1);
+					e.m_program = prog_str;
+					m_effects.emplace_back(e);
 				}
-				m_program = prog_str;
 			}
+			
 		}
 	}
 	bool Card::test_attribute(const t_string& attr) const
@@ -47,10 +52,16 @@ namespace YGO
 		});
 	}
 
-	bool Card::exec_once_each_turn() const {
+	t_string Card::effect_name(int idx) const {
+		stringstream ss;
+		ss << name() << "[" << idx << "]";
+		return ss.str();
+	}
+
+	bool Effect::exec_once_each_turn() const {
 		return find(m_prog_attribute.begin(), m_prog_attribute.end(), '1') != m_prog_attribute.end();
 	}
-	bool Card::exec_at_beginning() const {
+	bool Effect::exec_at_beginning() const {
 		return find(m_prog_attribute.begin(), m_prog_attribute.end(), '^') != m_prog_attribute.end();
 	}
 	std::ostream& operator<<(std::ostream& os, const Card& card)
@@ -68,11 +79,11 @@ namespace YGO
 			}
 			os << "]";
 		}
-		if (card.m_prog_attribute.size()) {
-			os << ", prog_attr: [" << card.m_prog_attribute << "]";
-		}
-		if (card.m_program.size()) {
-			os << ", program: " << card.m_program;
+		for (auto e : card.m_effects) {
+			if (e.m_prog_attribute.size()) {
+				os << ", prog_attr: [" << e.m_prog_attribute << "]";
+			}
+			os << ", program: " << e.m_program;
 		}
 		return os;
 	}

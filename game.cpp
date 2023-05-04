@@ -46,30 +46,30 @@ namespace YGO {
 		bool cont = true;
 		while(cont)
 		{
+			loop_begin:
 			cont = false;
 			for (auto it = m_hand->begin(); it != m_hand->end(); ++it) {
 				Card c = *it;
-				if (c.is_executable()) {
-					if (c.exec_once_each_turn()) {
-						if (m_already_executed.count(c.name())) {
+				for (int i = 0; i < c.m_effects.size(); i++) {
+					if (c.m_effects[i].exec_once_each_turn()) {
+						if (m_already_executed.count(c.effect_name(i))) {
 							//cout << "cannot exec because of [1]" << endl;
 							continue;
 						}
 					}
-					if (c.exec_at_beginning() && executed_count != 0) {
+					if (c.m_effects[i].exec_at_beginning() && executed_count != 0) {
 						//cout << "cannot exec because of [^]" << endl;
 						continue;
 					}
-					cont = execute_hand_card(it, 0);
+					cont = execute_hand_card(it, i);
 					if (cont) {
 						//success to execute
-						//cout << "executed card " << c.name() << " [" << c.description() << "]" << endl;
-						m_already_executed.insert(c.name());
+						//cout << "executed card " << c.effect_name(i) << " [" << c.description() << "]" << endl;
+						m_already_executed.insert(c.effect_name(i));
 						executed_count++;
-						break;
+						goto loop_begin;
 					}
 					//failed to execute, continue
-					
 				}
 			}
 		}
@@ -434,7 +434,7 @@ namespace YGO {
 		//	cout << *it << endl;
 		//}
 		Card card = *m_card_it;
-		vector<t_string> statements = split(card.program(), ";");
+		vector<t_string> statements = split(card.m_effects[m_opt].m_program, ";");
 		for (auto statement : statements) {
 			trim(statement);
 			stringstream ss(statement);
