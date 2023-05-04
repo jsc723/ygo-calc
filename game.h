@@ -77,7 +77,8 @@ namespace YGO {
 		std::shared_ptr<CardCollection> m_field;
 		std::shared_ptr<CardCollection> m_bochi;
 		std::shared_ptr<CardCollection> m_jyogai;
-		YGO::condition_set_t m_wanted_conds;
+		YGO::condition_set_t m_wanted_hand_conds;
+		YGO::condition_set_t m_wanted_grave_conds;
 		std::unordered_set<t_string> m_forbidden_funcs;
 		std::unordered_set<t_string> m_used_funcs;
 		std::unordered_map<t_string, int> m_vars;

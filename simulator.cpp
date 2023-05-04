@@ -8,10 +8,20 @@
 
 using namespace std;
 
-YGO::condition_set_t YGO::Simulator::Topic::get_wanted_conds() const {
+YGO::condition_set_t YGO::Simulator::Topic::get_wanted_hand_conds() const {
 	condition_set_t res_set;
 	for (auto &combo : m_combos) {
-		for (auto p_cond : combo.conditions) {
+		for (auto p_cond : combo.hand_conditions) {
+			res_set.emplace(p_cond);
+		}
+	}
+	return res_set;
+}
+
+YGO::condition_set_t YGO::Simulator::Topic::get_wanted_grave_conds() const {
+	condition_set_t res_set;
+	for (auto& combo : m_combos) {
+		for (auto p_cond : combo.grave_conditions) {
 			res_set.emplace(p_cond);
 		}
 	}
@@ -49,21 +59,35 @@ YGO::Simulator::Simulator(YAML::Node simulate)
 				Combo combo;
 				combo.name = jt->first.as<t_string>();
 				auto combo_node = jt->second;
+
 				if (combo_node["score"].IsDefined()) {
 					combo.score = combo_node["score"].as<double>();
 				}
-				auto combo_conds_node = combo_node["conditions"];
-				if (combo_conds_node.IsDefined() && combo_conds_node.IsSequence())
+
+				auto combo_hand_node = combo_node["hand"];
+				if (combo_hand_node.IsDefined() && combo_hand_node.IsSequence())
 				{
-					for (int j = 0; j < combo_conds_node.size(); j++)
+					for (int j = 0; j < combo_hand_node.size(); j++)
 					{
-						t_string cond_k = combo_conds_node[j].as<t_string>();
-						combo.condition_strings.push_back(cond_k);
+						t_string cond_k = combo_hand_node[j].as<t_string>();
+						combo.hand_condition_strings.push_back(cond_k);
 					}
 				}
-				else {
-					panic("Combo is not correctly defined: " + combo.name);
+
+				auto combo_grave_node = combo_node["grave"];
+				if (combo_grave_node.IsDefined() && combo_grave_node.IsSequence())
+				{
+					for (int j = 0; j < combo_grave_node.size(); j++)
+					{
+						t_string cond_k = combo_grave_node[j].as<t_string>();
+						combo.grave_condition_strings.push_back(cond_k);
+					}
 				}
+
+				if (combo.hand_condition_strings.size() + combo.grave_condition_strings.size() == 0) {
+					panic("a combo must have at least one condition");
+				}
+
 				topic.m_combos.emplace_back(std::move(combo));
 			}
 			m_topics.emplace_back(std::move(topic));
@@ -107,14 +131,13 @@ void YGO::Simulator::run(const Deck& deck_template, Context& context)
 			if (m_topics[i].m_exec_program) {
 				g.run();
 			}
-			auto handCards = g.m_hand->to_vector();
 			const int num_combo = m_topics[i].m_combos.size();
 
 			bool any_success = false;
 			double max_topic_score = 0.0;
 			for (int j = 0; j < num_combo; j++)
 			{
-				if (m_topics[i].m_combos[j].test(handCards)) {
+				if (m_topics[i].m_combos[j].test(g)) {
 					success[i][j]++;
 					any_success = true;
 					max_topic_score = std::max(max_topic_score, m_topics[i].m_combos[j].score);
@@ -146,27 +169,39 @@ void YGO::Simulator::run(const Deck& deck_template, Context& context)
 
 void YGO::Simulator::Combo::bind(Context& context)
 {
-	conditions.clear();
-	for (auto condition_str: condition_strings)
+	hand_conditions.clear();
+	for (auto condition_str: hand_condition_strings)
 	{
 		auto *cond = context.getCondition(condition_str);
 		if (!cond)
 		{
 			cond = Utils::parse(context, condition_str);
 		}
-		conditions.push_back(cond);
+		hand_conditions.push_back(cond);
+	}
+
+	grave_conditions.clear();
+	for (auto condition_str : grave_condition_strings)
+	{
+		auto* cond = context.getCondition(condition_str);
+		if (!cond)
+		{
+			cond = Utils::parse(context, condition_str);
+		}
+		grave_conditions.push_back(cond);
 	}
 }
 
-bool YGO::Simulator::Combo::test(std::vector<Card> cards)
+bool YGO::Simulator::Combo::test(const Game &g)
 {
-	vector<bool> used(cards.size());
-	for (auto cond : conditions)
+	auto hand_cards = g.m_hand->to_vector();
+	vector<bool> used(hand_cards.size());
+	for (auto cond : hand_conditions)
 	{
 		int found = false;
-		for (int i = 0; i < cards.size(); i++)
+		for (int i = 0; i < hand_cards.size(); i++)
 		{
-			if (!used[i] && cond->match(cards[i]))
+			if (!used[i] && cond->match(hand_cards[i]))
 			{
 				used[i] = true;
 				found = true;
@@ -178,22 +213,49 @@ bool YGO::Simulator::Combo::test(std::vector<Card> cards)
 			return false;
 		}
 	}
+
+	auto grave_cards = g.m_bochi->to_vector();
+	used = vector<bool>(grave_cards.size());
+	for (auto cond : grave_conditions)
+	{
+		int found = false;
+		for (int i = 0; i < grave_cards.size(); i++)
+		{
+			if (!used[i] && cond->match(grave_cards[i]))
+			{
+				used[i] = true;
+				found = true;
+				break;
+			}
+		}
+		if (!found)
+		{
+			return false;
+		}
+	}
+
 	return true;
 }
 
 void YGO::Simulator::Combo::print(ostream& os)
 {
 	os << name << ": " << "; score: " << score << "; ";
-	for (auto cond : condition_strings)
+	os << "hand: ";
+	for (auto cond : hand_condition_strings)
+	{
+		os << cond << "  ";
+	}
+	os << "grave: ";
+	for (auto cond : grave_condition_strings)
 	{
 		os << cond << "  ";
 	}
 }
-bool YGO::Simulator::Topic::test(std::vector<Card> cards)
+bool YGO::Simulator::Topic::test(const Game& g)
 {
 	for (auto& comb : m_combos)
 	{
-		if (comb.test(cards))
+		if (comb.test(g))
 		{
 			return true;
 		}

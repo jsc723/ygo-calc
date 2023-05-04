@@ -9,7 +9,9 @@ using namespace std;
 namespace YGO {
 	Yisp::Void Yisp::Void::void_;
 	Game::Game(const Deck& deck_template, const Simulator::Topic &topic)
-		:m_forbidden_funcs(256), m_used_funcs(256), m_vars(256), m_wanted_conds(topic.get_wanted_conds()),
+		:m_forbidden_funcs(256), m_used_funcs(256), m_vars(256), 
+		m_wanted_hand_conds(topic.get_wanted_hand_conds()),
+		m_wanted_grave_conds(topic.get_wanted_grave_conds()),
 		m_header(topic.m_header)
 	{
 		int start_hand_cards = topic.m_start_card;
@@ -21,9 +23,9 @@ namespace YGO {
 
 		vector<Card> hand_cards(deck_cards.begin(), deck_cards.begin() + start_hand_cards);
 		for (auto& c : hand_cards) {
-			for (auto cond : m_wanted_conds) {
+			for (auto cond : m_wanted_hand_conds) {
 				if (cond->match(c)) {
-					m_wanted_conds.erase(cond);
+					m_wanted_hand_conds.erase(cond);
 					break;
 				}
 			}
@@ -78,7 +80,7 @@ namespace YGO {
 	{
 		list<Card> selected;
 		for (int t = 0; t < k; t++) {
-			for (auto cond_it = m_wanted_conds.begin(); cond_it != m_wanted_conds.end(); ++cond_it) {
+			for (auto cond_it = m_wanted_hand_conds.begin(); cond_it != m_wanted_hand_conds.end(); ++cond_it) {
 				for (auto card_node_it = to_select.cards_its.begin(); card_node_it != to_select.cards_its.end(); card_node_it++ ) {
 					if ((*cond_it)->match(**card_node_it)) {
 						to_select.collection->move_to(*card_node_it, selected);

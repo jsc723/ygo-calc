@@ -5,8 +5,10 @@
 #include "deck.h"
 #include "context.h"
 #include "condition.h"
+
 namespace YGO {
 	using condition_set_t = std::set<YGO::Condition*, YGO::ConditionPtrCompare>;
+	class Game;
 	class Simulator
 	{
 		int m_count;
@@ -14,9 +16,11 @@ namespace YGO {
 		struct Combo {
 			t_string name;
 			double score = 1.0;
-			std::vector<t_string> condition_strings;
-			std::vector<Condition*> conditions;
-			bool test(const std::vector<Card> cards);
+			std::vector<t_string> hand_condition_strings;
+			std::vector<Condition*> hand_conditions;
+			std::vector<t_string> grave_condition_strings;
+			std::vector<Condition*> grave_conditions;
+			bool test(const Game& g);
 			void bind(Context& context);
 			void print(std::ostream& os);
 		};
@@ -28,10 +32,11 @@ namespace YGO {
 			int m_start_card;
 			bool m_exec_program;
 			t_string m_header;
-			bool test(const std::vector<Card> cards);
+			bool test(const Game& g);
 			void bind(Context& context);
 			void print(std::ostream& os);
-			condition_set_t get_wanted_conds() const;
+			condition_set_t get_wanted_hand_conds() const;
+			condition_set_t get_wanted_grave_conds() const;
 		};
 		std::vector<Topic> m_topics;
 		Simulator(YAML::Node simulate);
