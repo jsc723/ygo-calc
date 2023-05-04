@@ -9,9 +9,11 @@ namespace YGO {
 	struct Effect
 	{
 		t_string m_prog_attribute;
+		t_string m_valid_position;
 		t_string m_program;
 		bool exec_once_each_turn() const;
 		bool exec_at_beginning() const;
+		bool is_executable_at(t_string position) const;
 	};
 
 	class Card
@@ -30,6 +32,9 @@ namespace YGO {
 		t_string name() const { return m_name; }
 		t_string effect_name(int idx) const;
 		t_string description() const { return m_description; }
+		t_string print_name() const {
+			return m_description.empty() ? m_name : m_description;
+		}
 		bool test_attribute(const t_string& attr) const;
 		bool test_attribute_wildcard(const t_string& pattern) const;
 		int count() const { return m_count; }

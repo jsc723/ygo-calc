@@ -75,39 +75,39 @@ deck:
         qyou-tan-tubo:
             count: 2
             description: '强贪壶'
-            program: ['[1]/(> |D| 11);(# D.10 J);@;(% 2)']
+            program: ['[1]/(> |D| 11);(# D.10 J);@;(# X B);(% 2)']
         qyou-ken-tubo:
             count: 2
             description: '强谦壶'
-            program: ['[1]/(> |D| 5);@;($ D.6 1 H)']
+            program: ['[1]/(> |D| 5);@;(# X B);($ D.6 1 H)']
         qyou-kin-tubo:
             count: 2
             description: '强金壶'
-            program: ['[^]@;(% 2);']
+            program: ['[^]@;(# X B);(% 2);']
         kin-ken-tubo:
             count: 2
             description: '金谦壶'
-            program: ['[1]/(> |D| 5);@;($ D.6 1 H);(! %);']
+            program: ['[1]/(> |D| 5);@;(# X B);($ D.6 1 H);(! %);']
         kotuchi:
             count: 2
             description: '万宝槌'
-            program: ['(= x (- |H.!a:sushi| 1));/(> x 1);@;(# H.!a:sushi D);(% x)']
+            program: ['(= x (- |H.!a:sushi| 1));/(> x 1);@;(# X B);(# H.!a:sushi D);(% x)']
         munorengoku:
             count: 2
             description: '无之炼狱'
-            program: ['/(> |H| 2);@;(% 1)']
+            program: ['/(> |H| 2);@;(# X B);(% 1)']
         tehuda-masatu:
             count: 1
             description: '手牌抹杀'
-            program: ['@;(= "xx |H|);(# H B);(% xx)']
+            program: ['@;(# X B);(= "xx |H|);(# H B);(% xx)']
         inochi-housatu:
             count: 2
             description: '削命'
-            program: ['[1](= x |H.a:mahou| );(= y |H.a:trap|);(= z (> |H.a:M| 0));(= k (+ x (+ y z)));(= h (- |H| k));/(> 4 h);@;(% (- 3 h))']
+            program: ['[1](= x |H.a:mahou| );(= y |H.a:trap|);(= z (> |H.a:M| 0));(= k (+ x (+ y z)));(= h (- |H| k));/(> 4 h);@;(# X B);(% (- 3 h))']
         cup-of-ace:
             count: 2
             description: '圣杯A'
-            program: ['@;/(> (r 0 1) 0);(% 2)']
+            program: ['@;(# X B);/(> (r 0 1) 0);(% 2)']
 
 
         

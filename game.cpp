@@ -30,11 +30,17 @@ namespace YGO {
 				}
 			}
 		}
-		m_deck = make_shared<DefaultCardCollection>(deck_cards.begin() + start_hand_cards, deck_cards.end());
-		m_hand = make_shared<DefaultCardCollection>(hand_cards.begin(), hand_cards.end());
-		m_field = make_shared<DefaultCardCollection>();
-		m_bochi = make_shared<DefaultCardCollection>();
-		m_jyogai = make_shared<DefaultCardCollection>();
+		m_deck = make_shared<DefaultCardCollection>("D", deck_cards.begin() + start_hand_cards, deck_cards.end());
+		m_name_to_collection["D"] = m_deck;
+		m_hand = make_shared<DefaultCardCollection>("H", hand_cards.begin(), hand_cards.end());
+		m_name_to_collection["H"] = m_hand;
+		m_field = make_shared<DefaultCardCollection>("F");
+		m_name_to_collection["F"] = m_field;
+		m_bochi = make_shared<DefaultCardCollection>("B");
+		m_name_to_collection["B"] = m_bochi;
+		m_jyogai = make_shared<DefaultCardCollection>("J");
+		m_name_to_collection["J"] = m_jyogai;
+
 	}
 
 
@@ -43,35 +49,42 @@ namespace YGO {
 			Executor e(this, this->m_hand, this->m_hand->end(), 0);
 			e.run_header(m_header);
 		}
-		//cout << "-----------run-------------" << endl;
+		cout << "-----------run-------------" << endl;
 		int executed_count = 0;
 		bool cont = true;
 		while(cont)
 		{
 			loop_begin:
 			cont = false;
-			for (auto it = m_hand->begin(); it != m_hand->end(); ++it) {
-				Card c = *it;
-				for (int i = 0; i < c.m_effects.size(); i++) {
-					if (c.m_effects[i].exec_once_each_turn()) {
-						if (m_already_executed.count(c.effect_name(i))) {
-							//cout << "cannot exec because of [1]" << endl;
+			for (auto col : { m_hand, m_bochi }) {
+				for (auto it = col->begin(); it != col->end(); ++it) {
+					Card c = *it;
+					for (int i = 0; i < c.m_effects.size(); i++) {
+						if (!c.m_effects[i].is_executable_at(col->name())) {
+							//printf("skip\n");
 							continue;
 						}
+						//printf("%s %c, %c\n",c.name().c_str(), c.m_effects[i].m_valid_position[0], col->name()[0]);
+						if (c.m_effects[i].exec_once_each_turn()) {
+							if (m_already_executed.count(c.effect_name(i))) {
+								//cout << "cannot exec because of [1]" << endl;
+								continue;
+							}
+						}
+						if (c.m_effects[i].exec_at_beginning() && executed_count != 0) {
+							//cout << "cannot exec because of [^]" << endl;
+							continue;
+						}
+						cont = execute_card(col, it, i);
+						if (cont) {
+							//success to execute
+							cout << "executed card " << c.effect_name(i) << " [" << c.description() << "]" << endl;
+							m_already_executed.insert(c.effect_name(i));
+							executed_count++;
+							goto loop_begin;
+						}
+						//failed to execute, continue
 					}
-					if (c.m_effects[i].exec_at_beginning() && executed_count != 0) {
-						//cout << "cannot exec because of [^]" << endl;
-						continue;
-					}
-					cont = execute_hand_card(it, i);
-					if (cont) {
-						//success to execute
-						//cout << "executed card " << c.effect_name(i) << " [" << c.description() << "]" << endl;
-						m_already_executed.insert(c.effect_name(i));
-						executed_count++;
-						goto loop_begin;
-					}
-					//failed to execute, continue
 				}
 			}
 		}
@@ -101,10 +114,32 @@ namespace YGO {
 		dst->push_back(selected);
 	}
 
-	bool YGO::Game::execute_hand_card(CardNode it, int opt)
+	bool YGO::Game::execute_card(std::shared_ptr<CardCollection> col, CardNode it, int opt)
 	{
-		Executor e(this, this->m_hand, it, opt);
+		Executor e(this, col, it, opt);
 		return e.run();
+	}
+
+	std::shared_ptr<CardCollection> YGO::Game::find_card_position(CardNode card_it) {
+		for (auto c : { m_hand, m_bochi, m_field, m_jyogai, m_deck }) {
+			for (auto it = c->begin(); it != c->end(); ++it) {
+				if (card_it == it) {
+					return c;
+				}
+			}
+		}
+		return shared_ptr<CardCollection>();
+	}
+
+	//------------------------CardSet-----------------------------//
+
+	std::ostream& operator<<(std::ostream& os, const Yisp::CardSet& c) {
+		os << "{";
+		for (auto it : c.cards_its) {
+			os << it->print_name()  << ", ";
+		}
+		os << "}";
+		return os;
 	}
 
 	void Yisp::CardSet::move_to_back(std::shared_ptr<CardCollection> dst) 
@@ -142,13 +177,14 @@ namespace YGO {
 	}
 
 
+	//------------------------Executor-----------------------------//
+
 	shared_ptr<Yisp::Object> Executor::execStatement(stringstream& s)
 	{
 		//cout << "execStatement(" + s.str() + ")" << endl;
 		char c = s.peek();
 		if (c == '@') {
 			m_activated = true;
-			m_src->move_to(m_card_it, *(m_game->m_bochi));
 			return Yisp::Void::get();
 		}
 		if (c == '/') {
@@ -250,7 +286,9 @@ namespace YGO {
 			params = parseParams(s, { &Executor::execSet, &Executor::execSet });
 			auto src = std::dynamic_pointer_cast<Yisp::CardSet>(params[0]);
 			auto dst = std::dynamic_pointer_cast<Yisp::CardSet>(params[1]);
+
 			//printf("move %d\n", (int)src->size());
+			cout << "move " << *src << "from " << src->collection->name() << " to " << dst->collection->name() << endl;
 			src->move_to_back(dst->collection);
 		}
 		else if (f == "$") //select
@@ -361,20 +399,14 @@ namespace YGO {
 		vector<t_string> ws = split(w, ".");
 		shared_ptr<CardCollection> collection = nullptr;
 
-		if (ws[0] == "H") {
-			collection = m_game->m_hand;
+		if (m_game->m_name_to_collection.count(ws[0])) {
+			collection = m_game->m_name_to_collection[ws[0]];
 		}
-		else if (ws[0] == "D") {
-			collection = m_game->m_deck;
-		}
-		else if (ws[0] == "B") {
-			collection = m_game->m_bochi;
-		}
-		else if (ws[0] == "F") {
-			collection = m_game->m_field;
-		}
-		else if (ws[0] == "J") {
-			collection = m_game->m_jyogai;
+		else if (ws[0] == "X") {
+			shared_ptr<Yisp::CardSet> card_set(make_shared<Yisp::CardSet>());
+			card_set->collection = m_game->find_card_position(m_card_it);
+			card_set->cards_its.push_back(m_card_it);
+			return card_set;
 		}
 		else {
 			panic("unknown collection: " + ws[0]);

@@ -7,8 +7,12 @@ namespace YGO {
 	using CardNode = std::list<Card>::iterator;
 
 	class CardCollection {
+	protected:
+		t_string m_name;
+		CardCollection(t_string name) : m_name(name) {}
 
 	public:
+		virtual t_string name() const { return m_name; }
 		virtual CardNode begin() = 0;
 		virtual CardNode end() = 0;
 		virtual std::vector<Card> to_vector() const = 0;
@@ -27,15 +31,15 @@ namespace YGO {
 	class DefaultCardCollection : public CardCollection {
 		std::list<Card> cards;
 	public:
-		DefaultCardCollection() = default;
+		DefaultCardCollection(t_string name): CardCollection(name) {}
 		DefaultCardCollection(const DefaultCardCollection& other) = default;
 		DefaultCardCollection& operator=(const DefaultCardCollection& other) = default;
 		DefaultCardCollection(DefaultCardCollection&& other) = default;
 		DefaultCardCollection& operator=(DefaultCardCollection&& other) = default;
 
 		template<class RandomIt>
-		DefaultCardCollection(RandomIt begin, RandomIt end)
-		: cards(begin, end) {
+		DefaultCardCollection(t_string name, RandomIt begin, RandomIt end)
+			:CardCollection(name) ,cards(begin, end) {
 		}
 
 		virtual CardNode begin() override {

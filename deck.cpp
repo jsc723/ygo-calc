@@ -33,6 +33,14 @@ namespace YGO
 						}
 						e.m_prog_attribute = prog_str.substr(1, i - 1);
 						prog_str = prog_str.substr(i + 1);
+						for (char c : e.m_prog_attribute) {
+							if (c >= 'A' && c <= 'Z') {
+								e.m_valid_position += c;
+							}
+						}
+					}
+					if (e.m_valid_position.empty()) {
+						e.m_valid_position = "H"; //for backward compatibility
 					}
 					e.m_program = prog_str;
 					m_effects.emplace_back(e);
@@ -64,6 +72,9 @@ namespace YGO
 	bool Effect::exec_at_beginning() const {
 		return find(m_prog_attribute.begin(), m_prog_attribute.end(), '^') != m_prog_attribute.end();
 	}
+	bool Effect::is_executable_at(t_string position) const {
+		return find(m_valid_position.begin(), m_valid_position.end(), position[0]) != m_valid_position.end();
+	}
 	std::ostream& operator<<(std::ostream& os, const Card& card)
 	{
 		os << "name: " << card.m_name << ", count: " << card.m_count;
@@ -83,7 +94,8 @@ namespace YGO
 			if (e.m_prog_attribute.size()) {
 				os << ", prog_attr: [" << e.m_prog_attribute << "]";
 			}
-			os << ", program: " << e.m_program;
+			
+			os << ", position: " << e.m_valid_position << ", program: " << e.m_program;
 		}
 		return os;
 	}
