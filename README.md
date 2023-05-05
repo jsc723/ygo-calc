@@ -10,7 +10,7 @@
 - 堆墓5张什么都没触发
 - 后手抽不到手坑和解场卡，失去玩游戏王的权利
 
-如果是，那这个工具可以帮你模拟计算以上时间发生的概率。
+如果是，那这个工具可以帮你模拟计算以事件发生的概率。
 
 大致原理是：
 
@@ -172,8 +172,8 @@ First turn average success rate: 73.50%    average score: 1.05
 
 ## 进阶篇
 以上的功能能满足大多数的卡组，可是不能模拟有过牌功能的卡抽卡（比如各种壶，万宝槌，手牌抹杀等），也不能模拟卡的效果堆墓。进阶篇中将解决这个问题。大致原理是：
-- 定义卡片的时候同时编写脚本告诉模拟器这张卡的效果（比如可以抽卡，可以堆墓，可以检索）
-- 模拟器在抽到手牌后自动把手牌、墓地中所有能发动的卡牌都发动，直到没有卡牌能发动位置
+- 定义卡片的同时编写脚本告诉模拟器这张卡的效果（比如可以抽卡，可以堆墓，可以检索）
+- 模拟器在抽到手牌后自动把手牌、墓地中所有能发动的卡牌都发动，直到没有卡牌能发动为止
 - 模拟器把手牌、墓地中的卡与列出的希望得到的组合做匹配
 ### 例
 以下文件定义了一个珠泪卡组，并且定义了每张卡如何用于展开
@@ -343,7 +343,7 @@ Topic: test-hand-trap
 First turn average success rate: 70.00%    average score: 0.70
     H1: 50.00%      H2: 30.00%
 ```
-可以看到模拟器会自动发动卡牌展开
+可以看到模拟器会自动发动卡牌展开（只需要展开到随机部分结束就行了）
 
 ### 卡牌效果脚本
 每个效果的语法详细定义、用法如下（注：//中间的部分是正则表达式）
@@ -355,9 +355,9 @@ First turn average success rate: 70.00%    average score: 0.70
     "H代表在手牌可以发动，B代表在墓地可以发动，如果不写H或B则默认是在手牌发动"
 
 <statements> ->  <statement>
-             |-> <statements>;<statement>            #语句之间用;隔开
-<statement> ->  @                                    #发动效果，见注意事项
-            |-> /<number>                            #如果<number>的值为0则不再执行后续语句
+             |-> <statements>;<statement>            "语句之间用;隔开"
+<statement> ->  @                                    "发动效果，见注意事项"
+            |-> /<number>                            "如果<number>的值为0则不再执行后续语句"
             |-> <expression>
 <expression> -> () 
                 "空表达式，什么都不做"
@@ -366,7 +366,7 @@ First turn average success rate: 70.00%    average score: 0.70
             |-> (# <cardset> <card-collection>) 
                 "把<cardset>的卡全部加入到<card-collection>中"   
             |-> ($ <cardset> <number> <cardset>) 
-                "从第一个<cardset>选择<number>张加入第二个<cardset>”
+                "从第一个<cardset>选择<number>张加入第二个<cardset>"
             |-> (! <string>)
                 "禁止本回合再执行<string>命令，例如(! %)禁止抽卡"
             |-> (= <varname> <number>)
@@ -384,7 +384,7 @@ First turn average success rate: 70.00%    average score: 0.70
             "得到<cardset>的大小(卡的数量)"
         |-> (<op> <number> <number>)
             "相当于<第一个number> <op> <第二个number>"
-<op> |-> +|-|>|<|==|and|or|r
+<op> -> +|-|>|<|==|and|or|r
     "其中r代表random，(r x y) 代表随机取一个[x, y]之间的整数"
 <card-collection> -> H|D|F|B|J|X
     "H: 手牌，D：卡组，F：场上，B：墓地，J：除外，X：正在执行的这张卡"
@@ -418,6 +418,4 @@ First turn average success rate: 70.00%    average score: 0.70
 - `(if (> |H.xian-sheng| 0) (# D.3 B) ())` 如果手牌中有弦声`(> |H.xian-sheng| 0)`, 则把牌组顶端3张卡(`D.3`)送入墓地(`B`)，否则什么也不做(`()`) (注：严格来说场上有弦声才能触发堆3张的效果，不过这里为了简化程序就写了手牌)
 
 
-
-​         
 
