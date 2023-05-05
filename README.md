@@ -360,9 +360,9 @@ First turn average success rate: 70.00%    average score: 0.70
     "H代表在手牌可以发动，B代表在墓地可以发动，如果不写H或B则默认是在手牌发动"
 
 <statements> ->  <statement>
-             |-> <statements>;<statement>            #语句之间用;隔开
-<statement> ->  @                                    #发动效果，见注意事项
-            |-> /<number>                            #如果<number>的值为0则不再执行后续语句
+             |-> <statements>;<statement>            "语句之间用;隔开"
+<statement> ->  @                                    "发动效果，见注意事项"
+            |-> /<number>                            "如果<number>的值为0则不再执行后续语句"
             |-> <expression>
 <expression> -> () 
                 "空表达式，什么都不做"
@@ -371,7 +371,7 @@ First turn average success rate: 70.00%    average score: 0.70
             |-> (# <cardset> <card-collection>) 
                 "把<cardset>的卡全部加入到<card-collection>中"   
             |-> ($ <cardset> <number> <cardset>) 
-                "从第一个<cardset>选择<number>张加入第二个<cardset>”
+                "从第一个<cardset>选择<number>张加入第二个<cardset>"
             |-> (! <string>)
                 "禁止本回合再执行<string>命令，例如(! %)禁止抽卡"
             |-> (= <varname> <number>)
@@ -389,7 +389,7 @@ First turn average success rate: 70.00%    average score: 0.70
             "得到<cardset>的大小(卡的数量)"
         |-> (<op> <number> <number>)
             "相当于<第一个number> <op> <第二个number>"
-<op> |-> +|-|>|<|==|and|or|r
+<op> -> +|-|>|<|==|and|or|r
     "其中r代表random，(r x y) 代表随机取一个[x, y]之间的整数"
 <card-collection> -> H|D|F|B|J|X
     "H: 手牌，D：卡组，F：场上，B：墓地，J：除外，X：正在执行的这张卡"
