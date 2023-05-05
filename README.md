@@ -81,7 +81,7 @@ simulate:
                         - a:kowakuma
                         - a:trap
                 A2:
-                    score: 4.0
+                    score: 4
                     hand:
                         - a:kowakuma
                         - bu-mian-jia
