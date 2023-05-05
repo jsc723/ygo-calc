@@ -130,7 +130,8 @@ simulate:
     tests:
         <主题名>: 
             <组合名>: 
-                score: <分数> #默认1，如同时匹配多个组合则取最高分
+                score: <分数> #默认1，topic的分数为所有匹配的组合的最高分
+                condition: <number> #如果<number>表达式的值不为0则匹配，否则不匹配，score返回为0
                 hand:        #列出想抽到的手牌组合
                     - condition1 （卡名，alias定义的别名，或者<条件列表>）
                     - condition2 
@@ -139,7 +140,7 @@ simulate:
                 	- condition3
                 	...
 ```
-每种组合中`hand`和`grave`至少要填一个
+每种组合中`condition`,`hand`,`grave`可以选填任意一个，两个，或者都填
 
 当一张卡牌匹配了一种手牌类型之后，这张卡牌不会被用于匹配其他手牌类型，列举在前的手牌类型具有更高的优先级
 
