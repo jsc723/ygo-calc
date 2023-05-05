@@ -87,7 +87,7 @@ simulate:
                         - bu-mian-jia
                         - a:trap
         test-hand-trap:
-            start-card: 5
+            start-card: 5  #设置起始手牌数，默认5
             combos:
                 HT1:
                     score: '|H.a:hand-trap|'   #计算手上手坑的个数，详见进阶篇
