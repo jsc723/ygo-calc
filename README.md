@@ -111,7 +111,7 @@ simulate:
 ```
     alias:
         <别名>: <条件列表>
-            <条件列表>的格式为`<condition1> <condition2>...`，中间用空格隔开
+            <条件列表>的格式为<condition1> <condition2>...，中间用空格隔开
             每个condition之间是逻辑与（&&）关系
             每个condition的格式必须是以下一种：
                 1. 牌组（deck）中定义的卡牌名
@@ -127,12 +127,12 @@ simulate:
     tests:
         <主题名>: 
             <组合名>: 
-                score: <分数> #默认1.0，如匹配多个组合则取最高分
+                score: <分数> #默认1，如同时匹配多个组合则取最高分
                 hand:        #列出想抽到的手牌组合
                     - condition1 （卡名，alias定义的别名，或者<条件列表>）
                     - condition2 
                     ... 
-                grave:       #列出墓地里想堆到的牌
+                grave:       #列出墓地里想堆到的牌（详见进阶篇）
                 	- condition3
                 	...
 ```
@@ -301,6 +301,7 @@ simulate:
                         - zhulei-renyu-3
 
 ```
+注：目前还不支持诱发效果，所以地天使被堆墓时的诱发效果全都写成了主动效果
 
 ### 输出样例
 ```
@@ -354,8 +355,8 @@ First turn average success rate: 70.00%    average score: 0.70
 <effect> -> [<effect-attributes>]<statements>
        | -> <statements>
 <effect-attributes> -> {1^HB}的任意排列组合
-    "1代表卡名一回合一次，^代表必须在回合开始时就用"
-    "H代表在手牌可以发动，B代表在墓地可以发动，如果不写H或B则默认是在手牌发动"
+    "1代表卡名一回合一次，^代表只能在回合开始时发动"
+    "H代表在手牌时可以发动，B代表在墓地时可以发动，如果不写H或B则默认是在手牌发动"
 
 <statements> ->  <statement>
              |-> <statements>;<statement>            "语句之间用;隔开"
@@ -406,7 +407,7 @@ First turn average success rate: 70.00%    average score: 0.70
     
 ```
 #### 注意事项
-- 每个效果必须有一句`@`语句表示效果成功发动，在效果发动之前尽量不要移动任何卡（否则可能出bug，也可能没bug）
+- **每个效果必须有一句`@`语句表示效果成功发动**，在效果发动之前尽量不要移动任何卡（否则可能出bug，也可能没bug）
 #### 例
 ```
 '[1]/(> summon 0);(= summon (- summon 1));@;(# X F);(# D.a:bin.1 B);(if (> |H.xian-sheng| 0) (# D.3 B) ())'
