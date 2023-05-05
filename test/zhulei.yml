@@ -58,7 +58,7 @@ deck:
             attribute: ['mahou']
             description: '场地'
             program: 
-              - '[1]@;(# X F);(# D.zhulei-nanren.1 H))'
+              - '[1]@;(# X F);(if (> |D.zhulei-nanren| 0) (# D.zhulei-nanren.1 H) ())'
         ronghe:
             count: 1
             attribute: ['mahou']
@@ -68,7 +68,7 @@ deck:
             attribute: ['mahou']
             description: '增援'
             program: 
-              - '/(or (== 1 1) (== 0 1));@;(# X B);(# D.zhulei-nanren.1 H))'
+              - '/(> |D.zhulei-nanren| 0);@;(# X B);(# D.zhulei-nanren.1 H))'
         maizang:
             count: 1
             attribute: ['mahou']
@@ -93,6 +93,7 @@ deck:
             count: 8
             description: '手坑'
 simulate:
+    debug: true
     count: 100
     tests:
         test-expend:

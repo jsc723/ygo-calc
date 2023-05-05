@@ -70,7 +70,7 @@ namespace YGO {
 	{
 		std::unordered_set<t_string> m_already_executed;
 	public:
-		Game(const Deck &deck_template, const Simulator::Topic &topic);
+		Game(const Deck &deck_template, const Simulator::Topic &topic, bool debug);
 		void run();
 		bool execute_card(std::shared_ptr<CardCollection> col, CardNode it, int opt);
 		void select_add_hand_card(Yisp::CardSet& to_select, int k, std::shared_ptr<CardCollection> &dst);
@@ -87,6 +87,7 @@ namespace YGO {
 		std::unordered_set<t_string> m_forbidden_funcs;
 		std::unordered_set<t_string> m_used_funcs;
 		std::unordered_map<t_string, int> m_vars;
+		bool m_debug;
 
 		struct MoveEvent {
 			std::shared_ptr<CardCollection> src;

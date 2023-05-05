@@ -12,7 +12,8 @@ namespace YGO {
 	class Simulator
 	{
 		int m_count;
-		bool m_separate;
+		bool m_debug;
+		
 		struct Combo {
 			t_string name;
 			double score = 1.0;
@@ -41,6 +42,9 @@ namespace YGO {
 		std::vector<Topic> m_topics;
 		Simulator(YAML::Node simulate);
 		void run(const Deck& deck, Context& context);
+		bool is_debug() const {
+			return m_debug;
+		}
 
 	};
 }

@@ -8,8 +8,8 @@
 using namespace std;
 namespace YGO {
 	Yisp::Void Yisp::Void::void_;
-	Game::Game(const Deck& deck_template, const Simulator::Topic &topic)
-		:m_forbidden_funcs(256), m_used_funcs(256), m_vars(256), 
+	Game::Game(const Deck& deck_template, const Simulator::Topic &topic, bool debug)
+		:m_forbidden_funcs(256), m_used_funcs(256), m_vars(256), m_debug(debug),
 		m_wanted_hand_conds(topic.get_wanted_hand_conds()),
 		m_wanted_grave_conds(topic.get_wanted_grave_conds()),
 		m_header(topic.m_header)
@@ -49,7 +49,9 @@ namespace YGO {
 			Executor e(this, this->m_hand, this->m_hand->end(), 0);
 			e.run_header(m_header);
 		}
-		cout << "-----------run-------------" << endl;
+		if (m_debug) {
+			cout << "-----------run-------------" << endl;
+		}
 		int executed_count = 0;
 		bool cont = true;
 		while(cont)
@@ -61,24 +63,22 @@ namespace YGO {
 					Card c = *it;
 					for (int i = 0; i < c.m_effects.size(); i++) {
 						if (!c.m_effects[i].is_executable_at(col->name())) {
-							//printf("skip\n");
 							continue;
 						}
-						//printf("%s %c, %c\n",c.name().c_str(), c.m_effects[i].m_valid_position[0], col->name()[0]);
 						if (c.m_effects[i].exec_once_each_turn()) {
 							if (m_already_executed.count(c.effect_name(i))) {
-								//cout << "cannot exec because of [1]" << endl;
 								continue;
 							}
 						}
 						if (c.m_effects[i].exec_at_beginning() && executed_count != 0) {
-							//cout << "cannot exec because of [^]" << endl;
 							continue;
 						}
 						cont = execute_card(col, it, i);
 						if (cont) {
 							//success to execute
-							cout << "executed card " << c.effect_name(i) << " [" << c.description() << "]" << endl;
+							if (m_debug) {
+								cout << "executed card " << c.effect_name(i) << " [" << c.description() << "]" << endl;
+							}
 							m_already_executed.insert(c.effect_name(i));
 							executed_count++;
 							goto loop_begin;
@@ -181,7 +181,9 @@ namespace YGO {
 
 	shared_ptr<Yisp::Object> Executor::execStatement(stringstream& s)
 	{
-		//cout << "execStatement(" + s.str() + ")" << endl;
+		if (m_game->m_debug) {
+			cout << "execStatement(" + s.str() + ")" << endl;
+		}
 		char c = s.peek();
 		if (c == '@') {
 			m_activated = true;
@@ -260,7 +262,9 @@ namespace YGO {
 			list<Card> drawed_cards;
 			m_game->m_deck->pop_front(draw_count, drawed_cards);
 			m_game->m_hand->push_back(drawed_cards);
-			//printf("draw %d\n", draw_count);
+			if (m_game->m_debug) {
+				printf("draw %d\n", draw_count);
+			}
 		}
 		else if(f == "#") //move
 		{
@@ -271,9 +275,9 @@ namespace YGO {
 			if (src->size() == 0) {
 				panic("# source should not be empty, check program: " + s.str());
 			}
-
-			//printf("move %d\n", (int)src->size());
-			cout << "move " << *src << "from " << src->collection->name() << " to " << dst->collection->name() << endl;
+			if (m_game->m_debug) {
+				cout << "move " << *src << "from " << src->collection->name() << " to " << dst->collection->name() << endl;
+			}
 			src->move_to_back(dst->collection);
 		}
 		else if (f == "$") //select

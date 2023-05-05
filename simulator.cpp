@@ -32,8 +32,8 @@ YGO::Simulator::Simulator(YAML::Node simulate)
 {
 	auto count_node = simulate["count"];
 	m_count = count_node.IsDefined() ? count_node.as<int>() : 1000;
-	auto separate_node = simulate["separate"];
-	m_separate = separate_node.IsDefined() ? separate_node.as<bool>() : false;
+	auto debug_node = simulate["debug"];
+	m_debug = debug_node.IsDefined() ? debug_node.as<bool>() : false;
 
 	auto tests = simulate["tests"];
 	if (tests.IsDefined())
@@ -127,7 +127,7 @@ void YGO::Simulator::run(const Deck& deck_template, Context& context)
 		
 		for (int i = 0; i < m_topics.size(); i++)
 		{
-			Game g(deck_template, m_topics[i]);
+			Game g(deck_template, m_topics[i], m_debug);
 			if (m_topics[i].m_exec_program) {
 				g.run();
 			}
