@@ -16,7 +16,7 @@
 
 - 用户定义卡组（不包括额外）
 - 用户列出所有希望抽到的手牌的组合（或者堆墓希望堆到的牌的组合）
-- 工具模拟很多次抽卡/堆墓，统计抽到希望的组合的概率
+- 工具模拟抽卡/堆墓，统计抽到希望的组合的概率
 
 ## 快速入门
 ### 1. 创建YAML文件
@@ -99,7 +99,10 @@ simulate:
                         - HandTrap
                         - HandTrap
 ```
-以上yaml文件先在`deck`中定义了一个虫惑魔卡组（md版本），`deck.cards` 下面列出每种卡的数量（`count`，如果不填默认1），属性(`attribute`， 一个字符串列表，属性的内容任意，也可以不填)，描述(`description`，比如中文名，也可以不填)
+以上yaml文件先在`deck`中定义了一个虫惑魔卡组（md版本），`deck.cards` 下面列出每种卡的
+- 数量：`count`，如果不填默认1
+- 属性：`attribute`， 一个字符串列表，属性的内容任意，也可以不填
+- 描述：`description`，比如中文名，也可以不填
 
 每种`combos`的`score`必须是一个整数或者`<number>`表达式（见进阶篇），如果不填则默认为1
 
@@ -232,7 +235,7 @@ deck:
             description: '神巫'
             program: 
               - '[1]/(> summon 0);(= summon (- summon 1));@;(# X F);(# D.a:bin.1 B);(if (> |H.xian-sheng| 0) (# D.3 B) ())'
-        shijie:
+        zhenzhujie:
             count: 2
             attribute: ['mahou']
             description: '珠泪场地'
@@ -306,10 +309,10 @@ $ ./ygo-calc.exe zhulei.yml
 -----------run-------------
 execStatement(@)
 execStatement((# X F))
-move {shijie(珠泪场地), }from H to F
+move {zhenzhujie(珠泪场地), }from H to F
 execStatement((if (> |D.zhulei-nanren| 0) (# D.zhulei-nanren.1 H) ()))
 move {zhulei-nanren(珠泪男人), }from D to H
-executed card shijie[0] [珠泪场地]
+executed card zhenzhujie[0] [珠泪场地]
 execStatement(/(> summon 0))
 execStatement((= summon (- summon 1)))
 execStatement(@)
@@ -329,7 +332,7 @@ execStatement(@)
 execStatement((# X F))
 move {zhulei-renyu-2(2星人鱼), }from H to F
 execStatement((# D.3 B))
-move {hand-trap(手坑), shen-wu(神巫), shijie(珠泪场地), }from D to B
+move {hand-trap(手坑), shen-wu(神巫), zhenzhujie(珠泪场地), }from D to B
 execStatement((if (and (> |H.xian-sheng| 0) (< 0 |H.xian-sheng|)) (# D.3 B) ()))
 executed card zhulei-renyu-2[0] [2星人鱼]
 execStatement(/(== summon 1))
