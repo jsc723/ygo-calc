@@ -48,20 +48,12 @@ simulate:
         test-expend:
             combos:
                 A1:
-                    score: 2.0
+                    score: "|H.a:trap|"
                     hand:
                         - a:kowakuma
-                        - a:trap
                         - a:trap
                 A2:
-                    score: 3.0
-                    hand:
-                        - a:kowakuma
-                        - a:trap
-                        - a:trap
-                        - a:trap
-                A3:
-                    score: 4.0
+                    score: "(+ 2 |H.a:trap|)"
                     hand:
                         - a:kowakuma
                         - bu-mian-jia
@@ -70,11 +62,11 @@ simulate:
             start-card: 5
             combos:
                 HT1:
-                    score: 1.0
+                    score: '|H.a:hand-trap|'   #计算手上手坑的个数
                     hand:
                         - HandTrap
                 HT2:
-                    score: 2.0
+                    score: '|H.a:hand-trap|'
                     hand:
                         - HandTrap
                         - HandTrap

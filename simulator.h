@@ -16,12 +16,12 @@ namespace YGO {
 		
 		struct Combo {
 			t_string name;
-			double score = 1.0;
+			t_string score = "1";
 			std::vector<t_string> hand_condition_strings;
 			std::vector<Condition*> hand_conditions;
 			std::vector<t_string> grave_condition_strings;
 			std::vector<Condition*> grave_conditions;
-			bool test(const Game& g);
+			int test(Game& g);
 			void bind(Context& context);
 			void print(std::ostream& os);
 		};
@@ -33,7 +33,7 @@ namespace YGO {
 			int m_start_card;
 			bool m_exec_program;
 			t_string m_header;
-			bool test(const Game& g);
+			int test(Game& g);
 			void bind(Context& context);
 			void print(std::ostream& os);
 			condition_set_t get_wanted_hand_conds() const;

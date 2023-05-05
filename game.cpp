@@ -47,7 +47,7 @@ namespace YGO {
 	void Game::run() {
 		if (m_header.size()) {
 			Executor e(this, this->m_hand, this->m_hand->end(), 0);
-			e.run_header(m_header);
+			e.run_program(m_header);
 		}
 		if (m_debug) {
 			cout << "-----------run-------------" << endl;
@@ -118,6 +118,11 @@ namespace YGO {
 	{
 		Executor e(this, col, it, opt);
 		return e.run();
+	}
+
+	int YGO::Game::compute_number(t_string number) {
+		Executor e(this, this->m_hand, this->m_hand->end(), 0);
+		return e.compute_number(number);
 	}
 
 	std::shared_ptr<CardCollection> YGO::Game::find_card_position(CardNode card_it) {
@@ -531,7 +536,7 @@ namespace YGO {
 		}
 		return m_activated;
 	}
-	bool YGO::Executor::run_header(t_string header) {
+	bool YGO::Executor::run_program(t_string header) {
 		vector<t_string> statements = split(header, ";");
 		for (auto statement : statements) {
 			trim(statement);
@@ -545,5 +550,14 @@ namespace YGO {
 			}
 		}
 		return true;
+	}
+	int YGO::Executor::compute_number(t_string number) {
+		trim(number);
+		if (number.empty()) {
+			return 0;
+		}
+		stringstream ss(number);
+		auto res = execNumber(ss);
+		return res->num;
 	}
 }

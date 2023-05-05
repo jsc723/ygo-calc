@@ -76,19 +76,11 @@ simulate:
         test-expend:  #列举当前主题希望得到的手牌/墓地组合，主题名称任意，有任意一个组合满足则任务当前主题满足
             combos:   
                 A1:   #每种组合的名称任意
-                    score: 2.0 #可以为每个组合设定一个分数(score)，比如能做出多少个阻抗
+                    score: 2 #可以为每个组合设定一个分数(score)，比如能做出多少个阻抗
                     hand:      #列出希望抽到的手牌
                         - a:kowakuma
                         - a:trap
-                        - a:trap
                 A2:
-                    score: 3.0
-                    hand:
-                        - a:kowakuma
-                        - a:trap
-                        - a:trap
-                        - a:trap
-                A3:
                     score: 4.0
                     hand:
                         - a:kowakuma
@@ -98,16 +90,18 @@ simulate:
             start-card: 5
             combos:
                 HT1:
-                    score: 1.0
+                    score: '|H.a:hand-trap|'   #计算手上手坑的个数，详见进阶篇
                     hand:
                         - HandTrap
                 HT2:
-                    score: 2.0
+                    score: '|H.a:hand-trap|'
                     hand:
                         - HandTrap
                         - HandTrap
 ```
 以上yaml文件先在`deck`中定义了一个虫惑魔卡组（md版本），`deck.cards` 下面列出每种卡的数量（`count`，如果不填默认1），属性(`attribute`， 一个字符串列表，属性的内容任意，也可以不填)，描述(`description`，比如中文名，也可以不填)
+
+每种`combos`的`score`必须是一个整数或者`<number>`表达式（见进阶篇），如果不填则默认为1
 
 在`deck.alias`中可以给一些条件的组合起别名，格式如下
 
@@ -299,6 +293,7 @@ simulate:
                     hand:
                         - hand-trap
                 H2:
+                    score: '(+ |D.3.a:renyu| |D.3.a:bin|)'
                     hand:
                         - zhulei-renyu-3
 

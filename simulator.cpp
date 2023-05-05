@@ -61,7 +61,7 @@ YGO::Simulator::Simulator(YAML::Node simulate)
 				auto combo_node = jt->second;
 
 				if (combo_node["score"].IsDefined()) {
-					combo.score = combo_node["score"].as<double>();
+					combo.score = combo_node["score"].as<string>();
 				}
 
 				auto combo_hand_node = combo_node["hand"];
@@ -134,13 +134,14 @@ void YGO::Simulator::run(const Deck& deck_template, Context& context)
 			const int num_combo = m_topics[i].m_combos.size();
 
 			bool any_success = false;
-			double max_topic_score = 0.0;
+			int max_topic_score = 0;
 			for (int j = 0; j < num_combo; j++)
 			{
-				if (m_topics[i].m_combos[j].test(g)) {
+				int combo_score = m_topics[i].m_combos[j].test(g);
+				if (combo_score > 0) {
 					success[i][j]++;
 					any_success = true;
-					max_topic_score = std::max(max_topic_score, m_topics[i].m_combos[j].score);
+					max_topic_score = std::max(max_topic_score, combo_score);
 				}
 			}
 			total_success[i] += any_success;
@@ -192,7 +193,7 @@ void YGO::Simulator::Combo::bind(Context& context)
 	}
 }
 
-bool YGO::Simulator::Combo::test(const Game &g)
+int YGO::Simulator::Combo::test(Game &g)
 {
 	auto hand_cards = g.m_hand->to_vector();
 	vector<bool> used(hand_cards.size());
@@ -210,7 +211,7 @@ bool YGO::Simulator::Combo::test(const Game &g)
 		}
 		if (!found)
 		{
-			return false;
+			return 0;
 		}
 	}
 
@@ -230,11 +231,11 @@ bool YGO::Simulator::Combo::test(const Game &g)
 		}
 		if (!found)
 		{
-			return false;
+			return 0;
 		}
 	}
 
-	return true;
+	return g.compute_number(score);
 }
 
 void YGO::Simulator::Combo::print(ostream& os)
@@ -255,16 +256,14 @@ void YGO::Simulator::Combo::print(ostream& os)
 		}
 	}
 }
-bool YGO::Simulator::Topic::test(const Game& g)
+int YGO::Simulator::Topic::test(Game& g)
 {
+	int max_score = 0;
 	for (auto& comb : m_combos)
 	{
-		if (comb.test(g))
-		{
-			return true;
-		}
+		max_score = max(max_score, comb.test(g));
 	}
-	return false;
+	return max_score;
 }
 void YGO::Simulator::Topic::bind(Context& context)
 {

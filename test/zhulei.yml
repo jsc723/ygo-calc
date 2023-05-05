@@ -107,3 +107,13 @@ simulate:
                     hand:
                         - ronghe
                         - a:zhulei
+        test-hand-trap:
+            start-card: 5
+            combos:
+                H1:
+                    hand:
+                        - hand-trap
+                H2:
+                    score: '(+ |D.3.a:renyu| |D.3.a:bin|)'
+                    hand:
+                        - zhulei-renyu-3

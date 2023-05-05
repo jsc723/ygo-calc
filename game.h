@@ -73,6 +73,7 @@ namespace YGO {
 		Game(const Deck &deck_template, const Simulator::Topic &topic, bool debug);
 		void run();
 		bool execute_card(std::shared_ptr<CardCollection> col, CardNode it, int opt);
+		int compute_number(t_string program);
 		void select_add_hand_card(Yisp::CardSet& to_select, int k, std::shared_ptr<CardCollection> &dst);
 		std::shared_ptr<CardCollection> find_card_position(CardNode it);
 		t_string m_header;
@@ -116,7 +117,6 @@ namespace YGO {
 		std::shared_ptr<Yisp::Object> execStatement(std::stringstream& s);
 		std::shared_ptr<Yisp::Object> execExpr(std::stringstream& s);
 		std::vector< std::shared_ptr<Yisp::Object> > parseParams(std::stringstream& s, std::vector<parser_t> parserFuncs);
-		//std::shared_ptr<Yisp::Object> execFunc(std::stringstream& s);
 		std::shared_ptr<Yisp::Number> execNumber(std::stringstream& s);
 		std::shared_ptr<Yisp::CardSet> execSet(std::stringstream& s);
 		std::shared_ptr<Yisp::String> execString(std::stringstream& s);
@@ -125,6 +125,7 @@ namespace YGO {
 	public:
 		Executor(Game* game, std::shared_ptr<CardCollection> src, CardNode card_it, int opt);
 		bool run();
-		bool run_header(t_string header);
+		bool run_program(t_string header);
+		int compute_number(t_string number);
 	};
 }
