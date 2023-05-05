@@ -56,7 +56,7 @@ deck:
         shijie:
             count: 2
             attribute: ['mahou']
-            description: '场地'
+            description: '珠泪场地'
             program: 
               - '[1]@;(# X F);(if (> |D.zhulei-nanren| 0) (# D.zhulei-nanren.1 H) ())'
         ronghe:
@@ -93,7 +93,7 @@ deck:
             count: 8
             description: '手坑'
 simulate:
-    debug: true
+    debug: false
     count: 100
     tests:
         test-expend:

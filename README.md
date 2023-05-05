@@ -1,270 +1,428 @@
-# 游戏王抽卡模拟器
-## 使用方法
-### 1. 创建一个yml文件，里面格式如下
-```yaml
 
-deck：配置牌组
-  size: 牌组卡牌总数
-  cards：定义卡片
-       卡牌名: 每张卡名字任意
-            count: 重复次数（默认一张），-1代表根据牌组卡牌总数自动计算（只能有一个-1），
-            attribute: 一个列表，定义赋予该卡的属性（标签）
-                       属性内容自定义，例如怪兽卡、魔法卡，本家卡、泛用卡、手坑等等，均用字符串表示
-       注意卡牌总数不要超过之前定义的size
-  conditions: 给条件或条件的组合起别名，格式为
-      条件名: <条件列表>
+
+# 游戏王牌组构筑辅助工具ygo-calc v2
+
+## 介绍
+
+你是否担心自己的卡组有以下问题：
+
+- 先手卡手动不了
+- 堆墓5张什么都没触发
+- 后手抽不到手坑和解场卡，失去玩游戏王的权利
+
+如果是，那这个工具可以帮你模拟计算以上时间发生的概率。
+
+大致原理是：
+
+- 用户定义卡组（不包括额外）
+- 用户列出所有希望抽到的手牌的组合（或者堆墓希望堆到的牌的组合）
+- 工具模拟很多次抽卡/堆墓，统计抽到希望的组合的概率
+
+## 快速入门
+### 1. 创建YAML文件
+
+创建一个格式如下的YAML文件`example.yml`:
+
+```yaml
+deck:
+    cards:
+        kowakuma-trion:
+            count: 3
+            attribute: ['monstor', 'kowakuma']
+            description: '特里恩虫惑魔'
+        kowakuma-tio:
+            count: 3
+            attribute: ['monstor', 'kowakuma']
+            description: '蒂奥虫惑魔'
+        kowakuma-ranka:
+            count: 3
+            attribute: ['monstor', 'kowakuma']
+            description: '兰卡虫惑魔'
+        kowakuma-jiner:
+            count: 3
+            attribute: ['monstor', 'kowakuma']
+            description: '吉娜虫惑魔'
+        kowakuma-atora:
+            attribute: ['monstor', 'kowakuma']
+            description: '阿特拉虫惑魔'
+        urara:
+            count: 3
+            attribute: ['monstor', 'hand-trap']
+            description: '灰流丽'
+        zou-g:
+            count: 3
+            attribute: ['monstor', 'hand-trap']
+            description: '增殖G'
+        bu-mian-jia:
+            count: 3
+            attribute: ['trap']
+            description: '布面甲'
+        houyou:
+            count: 3
+            attribute: ['trap', 'hand-trap']
+            description: '泡影'
+        other-trap:
+            count: 15
+            attribute: ['trap']
+            description: '红坑'
+        
+    alias:
+        HandTrap: A:hand*                   #匹配灰流丽，增殖G，泡影
+        MonstorHandTrap: HandTrap a:monstor #只匹配灰流丽，增殖G
+        
+simulate:
+    count: 1000
+    tests: #列举想要关注的主题（例：展开、阻抗），每个主题之间互不相干
+        test-expend:  #列举当前主题希望得到的手牌/墓地组合，主题名称任意，有任意一个组合满足则任务当前主题满足
+            combos:   
+                A1:   #每种组合的名称任意
+                    score: 2.0 #可以为每个组合设定一个分数(score)，比如能做出多少个阻抗
+                    hand:      #列出希望抽到的手牌
+                        - a:kowakuma
+                        - a:trap
+                        - a:trap
+                A2:
+                    score: 3.0
+                    hand:
+                        - a:kowakuma
+                        - a:trap
+                        - a:trap
+                        - a:trap
+                A3:
+                    score: 4.0
+                    hand:
+                        - a:kowakuma
+                        - bu-mian-jia
+                        - a:trap
+        test-hand-trap:
+            start-card: 5
+            combos:
+                HT1:
+                    score: 1.0
+                    hand:
+                        - HandTrap
+                HT2:
+                    score: 2.0
+                    hand:
+                        - HandTrap
+                        - HandTrap
+```
+以上yaml文件先在`deck`中定义了一个虫惑魔卡组（md版本），`deck.cards` 下面列出每种卡的数量（`count`，如果不填默认1），属性(`attribute`， 一个字符串列表，属性的内容任意，也可以不填)，描述(`description`，比如中文名，也可以不填)
+
+在`deck.alias`中可以给一些条件的组合起别名，格式如下
+
+```
+    alias:
+        <别名>: <条件列表>
             <条件列表>的格式为`<condition1> <condition2>...`，中间用空格隔开
             每个condition之间是逻辑与（&&）关系
             每个condition的格式必须是以下一种：
                 1. 牌组（deck）中定义的卡牌名
                 2. a:属性  ->  要求该类型包含某种特定的属性
                 3. A:属性（模糊匹配）  -> 要求该类型包含某种特定的属性，后面的表达式可以带*（匹配任意个任意字符）或？（匹配一个任意字符）
-                4. !条件   ->  逻辑取反（要求后面跟的条件为假）
-                5. 定义在此项之前的条件名
-simulate: 模拟器配置
-    count：模拟次数
-    start_card: 初始手牌为多少张卡（默认5）
-    turns: 模拟多少回合 （默认5）
-    tests：列举想要关注的主题（例：展开、阻抗），每个主题之间互不相干
-        主题名: 列举当前主题希望得到的手牌组合，每个组合之间是逻辑与（||）关系
-            组合名: 定义一种希望满足的条件，列举需要的手牌
-                score: 该组合的分数（比如有多少个阻抗，默认1.0）
-                conditions:
-                    - condition1 （conditions定义的条件名，或者<条件列表>）
+                4. !<condition>   ->  逻辑取反（要求后面跟的条件为假）
+                5. 定义在此项之前的别名
+```
+
+在`simulate`中定义需要模拟抽卡的次数(`count`), 在`tests`中列出想要关注的主题， 格式如下
+
+```
+    tests:
+        <主题名>: 
+            <组合名>: 
+                score: <分数> #默认1.0，如匹配多个组合则取最高分
+                hand:        #列出想抽到的手牌组合
+                    - condition1 （卡名，alias定义的别名，或者<条件列表>）
                     - condition2 
                     ... 
-                    （注：当一张卡牌匹配了一种手牌类型之后，这张卡牌不会被用于匹配其他手牌类型，列举在前的手牌类型具有更高的优先级）
+                grave:       #列出墓地里想堆到的牌
+                	- condition3
+                	...
 ```
-注：文档里请只写半角字符（不要写中文不然可能出错）
-#### 例
-```yaml
+每种组合中`hand`和`grave`至少要填一个
 
-deck:
-deck:
-    size: 40
-    cards:
-        w-red:
-            count: 3
-            attribute: ['M', 'low', 'witches', 'start'] 
-        w-yellow:
-            count: 2
-            attribute: ['M', 'low', 'witches', 'start']
-        w-grey:
-            count: 2
-            attribute: ['M', 'low', 'witches', 'start']
-        w-green:
-            attribute: ['M', 'low', 'witches', 'start']
-        w-blue:
-            count: 2
-            attribute: ['M', 'witches']
-        w-black:
-            count: 2
-            attribute: ['M', 'witches']
-        w-white:
-            attribute: ['M', 'witches']
-        w-creation:
-            count: 3
-            attribute: ['H1', 'witches', 'start']
-        w-sabo:
-            count: 2
-            attribute: ['H1', 'witches']
-        w-colab:
-            attribute: ['H1', 'witches']
-        w-demo:
-            count: 2
-            attribute: ['H2', 'witches']
-        w-wind:
-            attribute: ['H2', 'witches']
-        w-street:
-            attribute: ['H0', 'witches']
-        w-scroll:
-            attribute: ['H0', 'witches']
-        sato:
-            count: 4
-            attribute: ['Hf']
-        dhero-fusion:
-            count: 2
-            attribute: ['H1', 'dhero']
-        urara:
-            count: 2
-            attribute: ['M', 'handtrap']
-        huai-shou:
-            count: 1
-            attribute: ['M', 'huai-shou']
-        others:
-            count: -1
-    conditions:
-        Witches: A:w*ch?s
-        Witches-Monster: Witches  a:M
-        Witches-Low-Monster: Witches  a:M  a:low
-        Witches-High-Monster: Witches-Monster  !a:low
-        Witches-Magic: Witches  A:H?
-        Witches-Search: w-creation
-simulate:
-    count: 1000
-    start_card: 5
-    turns: 6
-    tests:
-        Expand:
-            witches1:
-                score: 1.0
-                conditions:
-                    - a:start
-                    - Witches-Magic
-            witches2:
-                conditions:
-                    - Witches-High-Monster
-                    - w-demo
-                    - Witches-Magic
-            dhero:
-                score: 2.0
-                conditions:
-                    - dhero-fusion
-        Field:
-            field:
-                conditions:
-                    - sato
-        Resist:
-            hand-trap:
-                conditions:
-                    - a:handtrap
-            huai-shou:
-                conditions:
-                    - huai-shou
-    
-    
-```
-在`deck`中，我定义了一个40卡魔女术牌组，从上至下依次是魔女术本家的7种怪，7种本家魔法卡，魔法族之村（sato），
-融合命运，灰流丽，坏兽，其他卡
+当一张卡牌匹配了一种手牌类型之后，这张卡牌不会被用于匹配其他手牌类型，列举在前的手牌类型具有更高的优先级
 
-我把所有怪兽都赋予`M`标签，所有魔法卡按照类型分别赋予`H1` `H2` `H0` `Hf`（通常，速攻，永继，场地）
-魔女术本家卡片赋予`witches`标签
-
-有初动能力的本家卡赋予`start`标签，魔女术下级怪赋予`low`标签
-
-在`classes`之中，我定义了一些类型，这里举两个例子：
-```
-Witches: A:w*ch?s 
-```
-`w*ch?s`模糊匹配任意以w开头，之后跟任意字符串，然后跟ch，然后跟一个任意字符，结尾是s的属性
-在这个牌组中，能被匹配到的属性只有`witches`，所以这条这里也可以写`a:witches`，只不过我为了演示模糊匹配特意这么写
-
-```
-Witches-High-Monster: Witches-Monster  !a:low
-```
-这个类型定义了魔女术上级怪，它需要同时满足两个条件：
-
-1. 是魔女术怪兽（`Witches-Monster`）
-2. 不是下级怪（`!a:low`）
-
-这里的Witches-Monster必须定义在Witches-High-Monster之前才能被引用
-
-然后，在`tests`中，我有三个关心的主题，分别是展开，场地卡，阻抗
-
-其中展开又分为本家的两种展开和凤凰人展开，场地卡只有魔法族之村，阻抗又分成手坑和坏兽（暂且归为阻抗）每一中主题里，希望得到什么样的组合，就直接列举出来：
-
-本家第一种展开（witches1），我希望手上有一张本家初动（a:start：下级怪或检索魔法卡），并且还有另一张任意本家魔法卡（Witches-Magic），其他手牌任意（这种展开我给的分数是1分）
-
-本家第二种展开（witches2），我希望手上有一张本家高级怪，一张演示（出高级怪），和另一张任意本家魔法卡（这种展开我给的分数也是1分）
-
-第三种展开（dhero），只要我手上有融合命运就行（DHERO-Fusion），这种展开的给的分数是2分
-
-程序的输出中，对于每一个主题，每一个回合，都会显示每个主题成功的概率，以及每种组合单独的概率
-（输出样例在下面）
+注：文档里除了`description`请只写半角字符
 
 ### 2. 运行程序
+
 假设在当前目录下有
+
 ```
 example.yml
 ygo-calc.exe
 ```
+
 则可以通过如下任意方式运行程序：
-1. 双击ygo-calc.exe，在弹出的窗口中输入example.exe并按回车
+
+1. 双击ygo-calc.exe，在弹出的窗口中输入example.yml并按回车
 2. 把example.yml的图标拖拽至ygo-calc.exe上直接运行
 3. 打开控制台（cmd或powershell），cd至当前目录，输入`./ygo-calc.exe example.yml`
 
-## 程序输出样例
+### 3. 输出样例
+
 ```
-$ ./ygo-calc.exe example.yml
 Simulate 1000 times...
 Time used: 91ms
-Topic: Expand
-Turn 1 average success rate: 76.00%    average score: 0.99
-    witches1: 62.10%      witches2: 6.20%      dhero: 23.10%
+Topic: test-expend
+First turn average success rate: 73.80%    average score: 2.32
+    A1: 73.80%      A2: 45.60%      A3: 29.50%
 
-Turn 2 average success rate: 84.70%    average score: 1.11
-    witches1: 72.20%      witches2: 10.50%      dhero: 26.20%
+Topic: test-hand-trap
+First turn average success rate: 73.50%    average score: 1.05
+    HT1: 73.50%      HT2: 31.40%
 
-Turn 3 average success rate: 90.60%    average score: 1.22
-    witches1: 80.80%      witches2: 15.40%      dhero: 31.20%
+```
+注：如果中文description不能正常显示可能是控制台code page的问题，试试控制台中输入`chcp 65001`
 
-Turn 4 average success rate: 95.00%    average score: 1.29
-    witches1: 88.60%      witches2: 20.90%      dhero: 34.50%
-
-Turn 5 average success rate: 97.10%    average score: 1.35
-    witches1: 92.10%      witches2: 25.50%      dhero: 38.10%
-
-Turn 6 average success rate: 98.40%    average score: 1.41
-    witches1: 94.90%      witches2: 30.70%      dhero: 42.40%
-
-
-Topic: Field
-Turn 1 average success rate: 39.70%    average score: 0.40
-    field: 39.70%
-
-Turn 2 average success rate: 45.90%    average score: 0.46
-    field: 45.90%
-
-Turn 3 average success rate: 51.90%    average score: 0.52
-    field: 51.90%
-
-Turn 4 average success rate: 57.30%    average score: 0.57
-    field: 57.30%
-
-Turn 5 average success rate: 62.60%    average score: 0.63
-    field: 62.60%
-
-Turn 6 average success rate: 67.50%    average score: 0.68
-    field: 67.50%
-
-
-Topic: Resist
-Turn 1 average success rate: 33.70%    average score: 0.34
-    hand-trap: 24.20%      huai-shou: 12.30%
-
-Turn 2 average success rate: 38.70%    average score: 0.39
-    hand-trap: 27.90%      huai-shou: 14.50%
-
-Turn 3 average success rate: 43.30%    average score: 0.43
-    hand-trap: 31.80%      huai-shou: 16.10%
-
-Turn 4 average success rate: 48.60%    average score: 0.49
-    hand-trap: 36.10%      huai-shou: 18.40%
-
-Turn 5 average success rate: 53.00%    average score: 0.53
-    hand-trap: 39.40%      huai-shou: 21.10%
-
-Turn 6 average success rate: 57.60%    average score: 0.58
-    hand-trap: 43.40%      huai-shou: 23.40%
-
+## 进阶篇
+以上的功能能满足大多数的卡组，可是不能模拟有过牌功能的卡抽卡（比如各种壶，万宝槌，手牌抹杀等），也不能模拟卡的效果堆墓。进阶篇中将解决这个问题。大致原理是：
+- 定义卡片的时候同时编写脚本告诉模拟器这张卡的效果（比如可以抽卡，可以堆墓，可以检索）
+- 模拟器在抽到手牌后自动把手牌、墓地中所有能发动的卡牌都发动，直到没有卡牌能发动位置
+- 模拟器把手牌、墓地中的卡与列出的希望得到的组合做匹配
+### 例
+以下文件定义了一个珠泪卡组，并且定义了每张卡如何用于展开
+```yaml
+deck:
+    cards:
+        zhulei-renyu-2:
+            count: 2
+            attribute: ['M', 'zhulei', 'renyu']
+            description: '2星人鱼'
+            program: #一个字符串列表，每行代表一个效果，一张卡可以有多个效果
+              - '[1]/(> summon 0);(= summon (- summon 1));@;(# X F);(# D.3 B);(if (and (> |H.xian-sheng| 0) (< 0 |H.xian-sheng|)) (# D.3 B) ())'
+        zhulei-renyu-3:
+            count: 2
+            attribute: ['M', 'zhulei', 'renyu']
+            description: '3星人鱼'
+        zhulei-renyu-4:
+            count: 2
+            attribute: ['M', 'zhulei', 'renyu']
+            description: '4星人鱼'
+            program: 
+              - '[1]/(> |H.M| 1);@;(# X F);(if (> |H.a:renyu| 0) (# H.a:renyu.1 B) (# H.M B));(# D.3 B);(if (> |H.xian-sheng| 0) (# D.3 B) ())'
+        zhulei-nanren:
+            count: 3
+            attribute: ['M', 'zhulei', 'nanren']
+            description: '珠泪男人'
+            program: 
+              - '[1]/(== summon 1);(= summon (- summon 1));@;(# X F);(# D.a:renyu.1 B);(if (> |H.xian-sheng| 0) (# D.3 B) ())'
+        gu-jian-bin:
+            count: 2
+            attribute: ['M', 'di-tian-shi', 'bin']
+            description: '古尖兵'
+            program: 
+              - '[1B]@;(# D.5 B)'
+        gu-wei-bin:
+            count: 2
+            attribute: ['M', 'di-tian-shi', 'bin']
+            description: '古卫兵'
+            program: 
+              - '[1B]@;(# D.5 B)'
+        jian-shen-guan:
+            count: 2
+            attribute: ['M', 'di-tian-shi']
+            description: '剑神官'
+            program: 
+              - '[1]/(> |H.a:bin| 1);@;(# X F);(# H.a:bin.1 B)'
+        su-shen-xiang:
+            count: 2
+            attribute: ['M', 'di-tian-shi']
+            description: '宿神像'
+            program: 
+              - '[1]/(> |H.a:bin| 1);@;(# X F);(# H.a:bin.1 B)'
+        shen-wu:
+            count: 3
+            attribute: ['M']
+            description: '神巫'
+            program: 
+              - '[1]/(> summon 0);(= summon (- summon 1));@;(# X F);(# D.a:bin.1 B);(if (> |H.xian-sheng| 0) (# D.3 B) ())'
+        shijie:
+            count: 2
+            attribute: ['mahou']
+            description: '珠泪场地'
+            program: 
+              - '[1]@;(# X F);(if (> |D.zhulei-nanren| 0) (# D.zhulei-nanren.1 H) ())'
+        ronghe:
+            count: 1
+            attribute: ['mahou']
+            description: '融合'
+        zenyuan:
+            count: 1
+            attribute: ['mahou']
+            description: '增援'
+            program: 
+              - '/(> |D.zhulei-nanren| 0);@;(# X B);(# D.zhulei-nanren.1 H))'
+        maizang:
+            count: 1
+            attribute: ['mahou']
+            description: '埋葬'
+            program: 
+              - '@;(# X B);(# D.a:renyu.1 B))'
+        mo-shen-wang:
+            count: 1
+            attribute: ['M']
+            description: '魔神王'
+            program: 
+              - '[1]/(> |D.ronghe| 0);@;(# X B);(# D.ronghe.1 H))'
+        xian-sheng:
+            count: 3
+            attribute: ['mahou']
+            description: '弦声'
+        can-xiang:
+            count: 3
+            attribute: ['trap']
+            description: '残响'
+        hand-trap:
+            count: 8
+            description: '手坑'
+simulate:
+    debug: true #要求模拟器显示每次抽到牌后的详细执行步骤
+    count: 10
+    tests:
+        test-expend:
+            exec-program: true #要求模拟器自动发动卡牌（默认false)
+            header: '(= summon 1)' #回合开始时先执行header，一般用于定义全局变量
+            combos:
+                A1:
+                    grave:         
+                        - a:renyu  #墓地堆到人鱼就算能成功展开
+                A2:
+                    hand:
+                        - ronghe    #手上有融合也算能成功展开
+                        - a:zhulei
+        test-hand-trap:
+            start-card: 5
+            combos:
+                H1:
+                    hand:
+                        - hand-trap
+                H2:
+                    hand:
+                        - zhulei-renyu-3
 
 ```
 
-## 常见问题
-1. 为什么定义条件（condition）的时候只支持逻辑与，不支持逻辑或？
+### 输出样例
+```
+$ ./ygo-calc.exe zhulei.yml
+(前略)
+-----------run-------------
+execStatement(@)
+execStatement((# X F))
+move {shijie(珠泪场地), }from H to F
+execStatement((if (> |D.zhulei-nanren| 0) (# D.zhulei-nanren.1 H) ()))
+move {zhulei-nanren(珠泪男人), }from D to H
+executed card shijie[0] [珠泪场地]
+execStatement(/(> summon 0))
+execStatement((= summon (- summon 1)))
+execStatement(@)
+execStatement((# X F))
+move {zhulei-renyu-2(2星人鱼), }from H to F
+execStatement((# D.3 B))
+move {hand-trap(手坑), zenyuan(增援), zhulei-renyu-2(2星人鱼), }from D to B
+execStatement((if (and (> |H.xian-sheng| 0) (< 0 |H.xian-sheng|)) (# D.3 B) ()))
+executed card zhulei-renyu-2[0] [2星人鱼]
+execStatement(/(> |H.M| 1))
+execStatement(/(== summon 1))
+execStatement((= summon 1))
+-----------run-------------
+execStatement(/(> summon 0))
+execStatement((= summon (- summon 1)))
+execStatement(@)
+execStatement((# X F))
+move {zhulei-renyu-2(2星人鱼), }from H to F
+execStatement((# D.3 B))
+move {hand-trap(手坑), shen-wu(神巫), shijie(珠泪场地), }from D to B
+execStatement((if (and (> |H.xian-sheng| 0) (< 0 |H.xian-sheng|)) (# D.3 B) ()))
+executed card zhulei-renyu-2[0] [2星人鱼]
+execStatement(/(== summon 1))
+execStatement(/(> |H.a:bin| 1))
+Time used: 21ms
+Topic: test-expend
+First turn average success rate: 80.00%    average score: 0.80
+    A1: 80.00%      A2: 10.00%
 
-- 因为标签和模糊匹配已经间接实现了逻辑或，选取牌组的任何子集都可以用标签解决
+Topic: test-hand-trap
+First turn average success rate: 70.00%    average score: 0.70
+    H1: 50.00%      H2: 30.00%
+```
+可以看到模拟器会自动发动卡牌展开
 
-2. 为什么组合那里不支持表达式（例如：A类牌+B类牌>1 && C类牌==0）？
+### 卡牌效果脚本
+每个效果的语法详细定义、用法如下（注：//中间的部分是正则表达式）
+```
+<effect> -> [<effect-attributes>]<statements>
+       | -> <statements>
+<effect-attributes> -> {1^HB}的任意排列组合
+    "1代表一回合一次，^代表必须在回合开始时就用"
+    "H代表在手牌可以发动，B代表在墓地可以发动，如果不写H或B则默认是在手牌发动"
 
-- 因为直接把组合列举出来更直观，而且也没有必要。例如上面这个例子，可以定义
+<statements> ->  <statement>
+             |-> <statements>;<statement>            #语句之间用;隔开
+<statement> ->  @                                    #发动效果，见注意事项
+            |-> /<number>                            #如果<number>的值为0则不再执行后续语句
+            |-> <expression>
+<expression> -> () 
+                "空表达式，什么都不做"
+            |-> (% <number>)
+                "从卡组抽<number>张"   
+            |-> (# <cardset> <card-collection>) 
+                "把<cardset>的卡全部加入到<card-collection>中"   
+            |-> ($ <cardset> <number> <cardset>) 
+                "从第一个<cardset>选择<number>张加入第二个<cardset>”
+            |-> (! <string>)
+                "禁止本回合再执行<string>命令，例如(! %)禁止抽卡"
+            |-> (= <varname> <number>)
+                "把变量<varname>的值设置为<number>"
+                "如果<varname>的长度在两个字符以上，则这个变量的值在当前回合一直有效（全局变量）"
+                "否则只在当前效果执行期间有效（临时变量）"
+            |-> (if <number> <expression> <expression>)
+                "如果<number>不为0则执行第一个<expression>，否则执行第二个"
+<varname> -> [a-z]+
+<string> -> /[^\s()]/
+<number-literal> -> /[0-9]+/
+<number> -> <number-literal>
+        |-> <var-name>
+        |-> |<cardset>|
+            "得到<cardset>的大小(卡的数量)"
+        |-> (<op> <number> <number>)
+            "相当于<第一个number> <op> <第二个number>"
+<op> |-> +|-|>|<|==|and|or|r
+    "其中r代表random，(r x y) 代表随机取一个[x, y]之间的整数"
+<card-collection> -> H|D|F|B|J|X
+    "H: 手牌，D：卡组，F：场上，B：墓地，J：除外，X：正在执行的这张卡"
+<cardset> -> <card-collection>
+        |->  <card-collection><cardset-filters>
+    "<cardset>从一个<card-collection>开始，后面可以跟一连串的<cardset-filter>"
+    "每个<cardset-filter>用.隔开"
+<cardset-filters> -> <cardset-filter>
+                |->  <cardset-filter><cardset-filters>
+<cardset-filter> -> .<card-name>
+                    "选取集合中所有卡名为<card-name>的卡"
+                |-> .a:<card-attribute>
+                    "选取集合中所有拥有<card-attribute>属性的卡（不支持模糊匹配）"
+                |-> .<number-literal>
+                    "选取集合中前<number-literal>张卡"
+    
+```
+#### 注意事项
+- 每个效果必须有一句`@`语句表示效果成功发动，在效果发动之前尽量不要移动任何卡（否则可能出bug，也可能没bug）
+#### 例
+```
+'[1]/(> summon 0);(= summon (- summon 1));@;(# X F);(# D.a:bin.1 B);(if (> |H.xian-sheng| 0) (# D.3 B) ())'
+```
+这个效果的意思如下:
+- `[1]`：一回合一次
+- `/(> summon 0)`：当summon变量的值大于0时（自己这回合还没召唤过怪兽时）
+- `(= summon (- summon 1))`: summon的值减少1
+- `@`：发动这张卡
+- `(# X F)`：把这张卡（`X`）移动到场上（`F`）（召唤）
+- `(# D.a:bin.1 B)`：从牌组（`D`）选一只具有`bin`属性的卡（即古尖兵或古卫兵）送入墓地(`B`)
+- `(if (> |H.xian-sheng| 0) (# D.3 B) ())` 如果手牌中有弦声`(> |H.xian-sheng| 0)`, 则把牌组顶端3张卡(`D.3`)送入墓地(`B`)，否则什么也不做(`()`) (注：严格来说场上有弦声才能触发堆3张的效果，不过这里为了简化程序就写了手牌)
 
-- D类牌= A类牌或B类牌 （给所有A类牌和B类牌标注一个相同的标签）
 
-- E类牌=！C类牌
-  
 
-如有意向参与开发欢迎提交PR
-  
-         
+​         
 

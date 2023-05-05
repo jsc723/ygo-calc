@@ -111,7 +111,7 @@ deck:
 
 
         
-    conditions:
+    alias:
         Sushi: a:sushi A:M?
         Sushi5: a:sushi a:M2
         Sushi4-Non-Rice: a:sushi a:M !a:rice

@@ -1,0 +1,80 @@
+deck:
+    cards:
+        kowakuma-trion:
+            count: 3
+            attribute: ['monstor', 'kowakuma']
+            description: '特里恩虫惑魔'
+        kowakuma-tio:
+            count: 3
+            attribute: ['monstor', 'kowakuma']
+            description: '蒂奥虫惑魔'
+        kowakuma-ranka:
+            count: 3
+            attribute: ['monstor', 'kowakuma']
+            description: '兰卡虫惑魔'
+        kowakuma-jiner:
+            count: 3
+            attribute: ['monstor', 'kowakuma']
+            description: '吉娜虫惑魔'
+        kowakuma-atora:
+            attribute: ['monstor', 'kowakuma']
+            description: '阿特拉虫惑魔'
+        urara:
+            count: 3
+            attribute: ['monstor', 'hand-trap']
+            description: '灰流丽'
+        zou-g:
+            count: 3
+            attribute: ['monstor', 'hand-trap']
+            description: '增殖G'
+        bu-mian-jia:
+            count: 3
+            attribute: ['trap']
+            description: '布面甲'
+        houyou:
+            count: 3
+            attribute: ['trap', 'hand-trap']
+            description: '泡影'
+        other-trap:
+            count: 15
+            attribute: ['trap']
+            description: '红坑'
+        
+    alias:
+        HandTrap: a:hand-trap
+simulate:
+    count: 1000
+    tests:
+        test-expend:
+            combos:
+                A1:
+                    score: 2.0
+                    hand:
+                        - a:kowakuma
+                        - a:trap
+                        - a:trap
+                A2:
+                    score: 3.0
+                    hand:
+                        - a:kowakuma
+                        - a:trap
+                        - a:trap
+                        - a:trap
+                A3:
+                    score: 4.0
+                    hand:
+                        - a:kowakuma
+                        - bu-mian-jia
+                        - a:trap
+        test-hand-trap:
+            start-card: 5
+            combos:
+                HT1:
+                    score: 1.0
+                    hand:
+                        - HandTrap
+                HT2:
+                    score: 2.0
+                    hand:
+                        - HandTrap
+                        - HandTrap

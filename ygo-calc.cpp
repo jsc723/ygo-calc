@@ -53,7 +53,7 @@ int main(int argc, char **argv)
     {
         context.addCardNameCondition(card);
     }
-    YAML::Node conditions = root["deck"]["conditions"];
+    YAML::Node conditions = root["deck"]["alias"];
     if (conditions.IsDefined())
     {
         for (auto it = conditions.begin(); it != conditions.end(); ++it)
