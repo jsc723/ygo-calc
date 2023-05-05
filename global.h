@@ -6,6 +6,7 @@
 #include <sstream>
 #include <functional>
 #include <string>
+#include <cmath>
 
 namespace YGO
 {
@@ -26,4 +27,9 @@ namespace YGO
 	std::string read_while(std::stringstream& s, std::function<bool(char c)> pred);
 
 	int random_int(int low, int high);
+
+	double compute_ci(double p, int n);
+	double compute_mean(const std::vector<double> data);
+	double compute_std(const std::vector<double> data);
+	
 }

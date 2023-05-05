@@ -105,3 +105,29 @@ int YGO::random_int(int low, int high) {
 	std::uniform_int_distribution<> dis(low, high);
 	return dis(gen);
 }
+
+double YGO::compute_ci(double p, int n) {
+	return 1.96 * sqrt(p * (1 - p) / n);
+}
+double YGO::compute_mean(const std::vector<double> data) {
+	if (data.empty()) {
+		return 0;
+	}
+	double sum = 0;
+	for (auto x : data) {
+		sum += x;
+	}
+	return sum / data.size();
+}
+double YGO::compute_std(const std::vector<double> data) {
+	if (data.size() <= 1) {
+		return 0;
+	}
+	double mean = compute_mean(data);
+	double sum = 0;
+	int n = data.size();
+	for (auto x : data) {
+		sum += (x - mean) * (x - mean);
+	}
+	return sqrt(sum / (n - 1));
+}

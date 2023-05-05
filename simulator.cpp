@@ -34,6 +34,8 @@ YGO::Simulator::Simulator(YAML::Node simulate)
 	m_count = count_node.IsDefined() ? count_node.as<int>() : 1000;
 	auto debug_node = simulate["debug"];
 	m_debug = debug_node.IsDefined() ? debug_node.as<bool>() : false;
+	auto CI_node = simulate["confidence-interval"];
+	m_show_ci = CI_node.IsDefined() ? CI_node.as<bool>() : false;
 
 	auto tests = simulate["tests"];
 	if (tests.IsDefined())
@@ -108,7 +110,7 @@ void YGO::Simulator::run(const Deck& deck_template, Context& context)
 	int num_topic = m_topics.size();
 	vector<vector<int>> success(num_topic); //topic, combo
 	vector<int> total_success(num_topic); //topic
-	vector<double> total_score(num_topic); //topic
+	vector<vector<double>> topic_scores(num_topic, vector<double>(m_count)); //topic, scores
 	int max_num_combo = 0;
 	for (int i = 0; i < num_topic; i++)
 	{
@@ -145,7 +147,7 @@ void YGO::Simulator::run(const Deck& deck_template, Context& context)
 				}
 			}
 			total_success[i] += any_success;
-			total_score[i] += max_topic_score;
+			topic_scores[i][k] = max_topic_score;
 		}
 	}
 
@@ -157,11 +159,29 @@ void YGO::Simulator::run(const Deck& deck_template, Context& context)
 	{
 		std::cout << "Topic: " << m_topics[i].name << endl;
 		const int num_combo = m_topics[i].m_combos.size();
-		printf("First turn average success rate: %.2lf%%    ", (double)total_success[i] / m_count * 100.0);
-		printf("average score: %.2lf\n", (double)total_score[i] / m_count);
+		double p_success = (double)total_success[i] / m_count;
+		printf("First turn average success rate: %.2lf%%", p_success * 100.0);
+		if (m_show_ci) {
+			printf(" +- %.2lf%%", compute_ci(p_success, m_count) * 100);
+		}
+		printf("  ");
+
+		double mean_score = compute_mean(topic_scores[i]);
+		
+		printf("average score: %.2lf", mean_score);
+		if (m_show_ci) {
+			double std_score = compute_std(topic_scores[i]);
+			printf(" +- %.2lf", 1.96 * (std_score / sqrt(m_count)));
+		}
+		printf("\n");
 		for (int j = 0; j < num_combo; j++)
 		{
-			printf("    %s: %.2lf%%  ", m_topics[i].m_combos[j].name.c_str(), (double)success[i][j] / m_count * 100.0);
+			double p = (double)success[i][j] / m_count;
+			printf("    %s: %.2lf%%", m_topics[i].m_combos[j].name.c_str(), p * 100.0);
+			if (m_show_ci) {
+				printf(" +- %.2lf%%", compute_ci(p, m_count) * 100);
+			}
+			printf("  ");
 		}
 		printf("\n\n");
 	}

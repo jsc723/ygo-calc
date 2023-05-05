@@ -13,6 +13,7 @@ namespace YGO {
 	{
 		int m_count;
 		bool m_debug;
+		bool m_show_ci;
 		
 		struct Combo {
 			t_string name;

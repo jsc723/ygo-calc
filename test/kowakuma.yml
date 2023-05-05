@@ -44,6 +44,7 @@ deck:
         HandTrap: a:hand-trap
 simulate:
     count: 1000
+    confidence-interval: true
     tests:
         test-expend:
             combos:

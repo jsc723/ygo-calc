@@ -71,7 +71,8 @@ deck:
         MonstorHandTrap: HandTrap a:monstor #只匹配灰流丽，增殖G
         
 simulate:
-    count: 1000
+    count: 1000 #模拟的次数
+    confidence-interval: true #显示95%置信区间，默认false
     tests: #列举想要关注的主题（例：展开、阻抗），每个主题之间互不相干
         test-expend:  #列举当前主题希望得到的手牌/墓地组合，主题名称任意，有任意一个组合满足则任务当前主题满足
             combos:   
@@ -163,14 +164,14 @@ ygo-calc.exe
 
 ```
 Simulate 1000 times...
-Time used: 123ms
+Time used: 97ms
 Topic: test-expend
-First turn average success rate: 87.40%    average score: 2.76
-    A1: 87.40%      A2: 27.90%
+First turn average success rate: 85.50% +- 2.18%  average score: 2.63 +- 0.11
+    A1: 85.50% +- 2.18%      A2: 25.00% +- 2.68%
 
 Topic: test-hand-trap
-First turn average success rate: 73.10%    average score: 1.12
-    HT1: 73.10%      HT2: 31.30%      urara-2: 3.10%
+First turn average success rate: 74.40% +- 2.70%  average score: 1.12 +- 0.05
+    HT1: 74.40% +- 2.70%      HT2: 30.70% +- 2.86%      urara-2: 3.60% +- 1.15%
 
 ```
 注：如果中文description不能正常显示可能是控制台code page的问题，试试控制台中输入`chcp 65001`

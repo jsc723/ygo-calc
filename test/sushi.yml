@@ -119,6 +119,7 @@ deck:
         Kowakuma: a:kowakuma a:M
 simulate:
     count: 1000
+    confidence-interval: true
     tests:
         test-expend:
             exec-program: true
