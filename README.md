@@ -354,7 +354,7 @@ First turn average success rate: 70.00%    average score: 0.70
 <effect> -> [<effect-attributes>]<statements>
        | -> <statements>
 <effect-attributes> -> {1^HB}的任意排列组合
-    "1代表一回合一次，^代表必须在回合开始时就用"
+    "1代表卡名一回合一次，^代表必须在回合开始时就用"
     "H代表在手牌可以发动，B代表在墓地可以发动，如果不写H或B则默认是在手牌发动"
 
 <statements> ->  <statement>
@@ -412,7 +412,7 @@ First turn average success rate: 70.00%    average score: 0.70
 '[1]/(> summon 0);(= summon (- summon 1));@;(# X F);(# D.a:bin.1 B);(if (> |H.xian-sheng| 0) (# D.3 B) ())'
 ```
 这个效果的意思如下:
-- `[1]`：一回合一次
+- `[1]`：卡名一回合一次
 - `/(> summon 0)`：当summon变量的值大于0时（自己这回合还没召唤过怪兽时）
 - `(= summon (- summon 1))`: summon的值减少1
 - `@`：发动这张卡
