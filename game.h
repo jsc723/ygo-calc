@@ -115,7 +115,7 @@ namespace YGO {
 		std::shared_ptr<Yisp::Object> execStatement(std::stringstream& s);
 		std::shared_ptr<Yisp::Object> execExpr(std::stringstream& s);
 		std::vector< std::shared_ptr<Yisp::Object> > parseParams(std::stringstream& s, std::vector<parser_t> parserFuncs);
-		std::shared_ptr<Yisp::Object> execFunc(std::stringstream& s);
+		//std::shared_ptr<Yisp::Object> execFunc(std::stringstream& s);
 		std::shared_ptr<Yisp::Number> execNumber(std::stringstream& s);
 		std::shared_ptr<Yisp::CardSet> execSet(std::stringstream& s);
 		std::shared_ptr<Yisp::String> execString(std::stringstream& s);

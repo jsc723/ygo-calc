@@ -239,16 +239,20 @@ bool YGO::Simulator::Combo::test(const Game &g)
 
 void YGO::Simulator::Combo::print(ostream& os)
 {
-	os << name << ": " << "; score: " << score << "; ";
-	os << "hand: ";
-	for (auto cond : hand_condition_strings)
-	{
-		os << cond << "  ";
+	os << name << ": score: " << score << "; ";
+	if (hand_condition_strings.size()) {
+		os << "hand: ";
+		for (auto cond : hand_condition_strings)
+		{
+			os << cond << "  ";
+		}
 	}
-	os << "grave: ";
-	for (auto cond : grave_condition_strings)
-	{
-		os << cond << "  ";
+	if (grave_condition_strings.size()) {
+		os << "grave: ";
+		for (auto cond : grave_condition_strings)
+		{
+			os << cond << "  ";
+		}
 	}
 }
 bool YGO::Simulator::Topic::test(const Game& g)

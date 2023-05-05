@@ -136,7 +136,7 @@ namespace YGO {
 	std::ostream& operator<<(std::ostream& os, const Yisp::CardSet& c) {
 		os << "{";
 		for (auto it : c.cards_its) {
-			os << it->name()  << ", ";
+			os << it->print_name() << ", ";
 		}
 		os << "}";
 		return os;
@@ -193,47 +193,14 @@ namespace YGO {
 			shared_ptr<Yisp::Number> res = execCondition(s);
 			if (res->num == 0) {
 				m_cond_break = true;
-				return Yisp::Void::get();
 			}
+			return Yisp::Void::get();
+		}
+		if (c == '\\') {
+			panic("should not use \\, check: " + s.str());
 		}
 
 		return execExpr(s);
-	}
-
-	shared_ptr<Yisp::Object> Executor::execExpr(std::stringstream& s)
-	{
-		char c = s.peek();
-		//set
-		if (c >= 'A' && c <= 'Z') {
-			return execSet(s);
-		}
-		// number case 1, 3, 4
-		if (c >= '0' && c <= '9' || c >= 'a' && c <= 'z' || c == '|') {
-			return execNumber(s);
-		}
-
-		if (c == '(') {
-			c = s.get();
-			remove_space(s);
-			char c2 = s.peek();
-			// number case 2
-			if (c2 == '>' || c2 == '+' || c2 == '-' || c2 == 'r') {
-				s.putback(c);
-				return execNumber(s);
-			}
-			if (c2 == ')') {
-				// empty expression, do nothing
-				s.get();
-				return Yisp::Void::get();
-			}
-			
-			// function
-			return execFunc(s);
-		}
-		if (c == '\"') { // String
-			return execString(s);
-		}
-		return Yisp::Void::get();
 	}
 
 	std::shared_ptr<Yisp::String> Executor::execString(std::stringstream& s) {
@@ -264,8 +231,16 @@ namespace YGO {
 		return params;
 	}
 
-	shared_ptr<Yisp::Object> Executor::execFunc(std::stringstream& s)
+	shared_ptr<Yisp::Object> Executor::execExpr(std::stringstream& s)
 	{
+		char c = s.get();
+		if (c != '(') {
+			panic("wrong expression: " + s.str());
+		}
+		if (s.peek() == ')') {
+			//empty expression, do nothing
+			return Yisp::Void::get();
+		}
 		t_string f;
 		s >> f;
 		remove_space(s);
@@ -292,6 +267,10 @@ namespace YGO {
 			params = parseParams(s, { &Executor::execSet, &Executor::execSet });
 			auto src = std::dynamic_pointer_cast<Yisp::CardSet>(params[0]);
 			auto dst = std::dynamic_pointer_cast<Yisp::CardSet>(params[1]);
+
+			if (src->size() == 0) {
+				panic("# source should not be empty, check program: " + s.str());
+			}
 
 			//printf("move %d\n", (int)src->size());
 			cout << "move " << *src << "from " << src->collection->name() << " to " << dst->collection->name() << endl;
@@ -408,25 +387,40 @@ namespace YGO {
 		}
 		if (c == '(') {
 			remove_space(s);
-			s.get(c);
+			auto op = read_while(s, [](char c) {
+				return !isspace(c);
+			});
 			remove_space(s);
 			int num1 = execNumber(s)->num;
 			remove_space(s);
 			int num2 = execNumber(s)->num;
 			int res;
-			switch (c) {
-			case '+':
+			if (op == "+") {
 				res = num1 + num2;
-				break;
-			case '-':
+			}
+			else if (op == "-") {
 				res = num1 - num2;
-				break;
-			case '>':
+			}
+			else if (op == ">") {
 				res = num1 > num2;
-				break;
-			case 'r':
+			}
+			else if (op == "<") {
+				res = num1 < num2;
+			}
+			else if (op == "==") {
+				res = num1 == num2;
+			}
+			else if (op == "and") {
+				res = (num1 != 0) & (num2 != 0);
+			}
+			else if (op == "or") {
+				res = (num1 != 0) | (num2 != 0);
+			}
+			else if (op == "r") {
 				res = random_int(num1, num2);
-				break;
+			}
+			else {
+				panic("unknown operator [" + op + "] in " + s.str());
 			}
 			remove_space(s);
 			s.get(c);
@@ -511,14 +505,20 @@ namespace YGO {
 
 	bool YGO::Executor::run()
 	{
-		//printf("deck: %d, hand: %d\n", m_game->m_deck->size(), m_game->m_hand->size());
-		//for (auto it = m_game->m_hand->begin(); it != m_game->m_hand->end(); ++it) {
-		//	cout << *it << endl;
-		//}
+		
 		Card card = *m_card_it;
 		vector<t_string> statements = split(card.m_effects[m_opt].m_program, ";");
 		for (auto statement : statements) {
+			//printf("---------%s-----------", statement.c_str());
+			//printf("deck: %d, hand: %d\n", m_game->m_deck->size(), m_game->m_hand->size());
+			//for (auto it = m_game->m_hand->begin(); it != m_game->m_hand->end(); ++it) {
+			//	cout << it->print_name() << endl;
+			//}
+
 			trim(statement);
+			if (statement.empty()) {
+				continue;
+			}
 			stringstream ss(statement);
 			execStatement(ss);
 			if (m_cond_break) {
@@ -531,6 +531,9 @@ namespace YGO {
 		vector<t_string> statements = split(header, ";");
 		for (auto statement : statements) {
 			trim(statement);
+			if (statement.empty()) {
+				continue;
+			}
 			stringstream ss(statement);
 			execStatement(ss);
 			if (m_cond_break) {

@@ -5,6 +5,8 @@ deck:
             count: 2
             attribute: ['M', 'zhulei', 'renyu']
             description: '2星人鱼'
+            program: 
+              - '[1]/(> summon 0);(= summon (- summon 1));@;(# X F);(# D.3 B);(if (and (> |H.xian-sheng| 0) (< 0 |H.xian-sheng|)) (# D.3 B) ())'
         zhulei-renyu-3:
             count: 2
             attribute: ['M', 'zhulei', 'renyu']
@@ -13,18 +15,22 @@ deck:
             count: 2
             attribute: ['M', 'zhulei', 'renyu']
             description: '4星人鱼'
+            program: 
+              - '[1]/(> |H.M| 1);@;(# X F);(if (> |H.a:renyu| 0) (# H.a:renyu.1 B) (# H.M B));(# D.3 B);(if (> |H.xian-sheng| 0) (# D.3 B) ())'
         zhulei-nanren:
             count: 3
             attribute: ['M', 'zhulei', 'nanren']
             description: '珠泪男人'
+            program: 
+              - '[1]/(== summon 1);(= summon (- summon 1));@;(# X F);(# D.a:renyu.1 B);(if (> |H.xian-sheng| 0) (# D.3 B) ())'
         gu-jian-bin:
-            count: 3
+            count: 2
             attribute: ['M', 'di-tian-shi', 'bin']
             description: '古尖兵'
             program: 
               - '[1B](# D.5 B);@'
         gu-wei-bin:
-            count: 3
+            count: 2
             attribute: ['M', 'di-tian-shi', 'bin']
             description: '古卫兵'
             program: 
@@ -33,10 +39,14 @@ deck:
             count: 2
             attribute: ['M', 'di-tian-shi']
             description: '剑神官'
+            program: 
+              - '[1]/(> |H.a:bin| 1);@;(# X F);(# H.a:bin.1 B)'
         su-shen-xiang:
             count: 2
             attribute: ['M', 'di-tian-shi']
             description: '宿神像'
+            program: 
+              - '[1]/(> |H.a:bin| 1);@;(# X F);(# H.a:bin.1 B)'
         shen-wu:
             count: 3
             attribute: ['M']
@@ -47,6 +57,30 @@ deck:
             count: 2
             attribute: ['mahou']
             description: '场地'
+            program: 
+              - '[1]@;(# X F);(# D.zhulei-nanren.1 H))'
+        ronghe:
+            count: 1
+            attribute: ['mahou']
+            description: '融合'
+        zenyuan:
+            count: 1
+            attribute: ['mahou']
+            description: '增援'
+            program: 
+              - '/(or (== 1 1) (== 0 1));@;(# X B);(# D.zhulei-nanren.1 H))'
+        maizang:
+            count: 1
+            attribute: ['mahou']
+            description: '埋葬'
+            program: 
+              - '@;(# X B);(# D.a:renyu.1 B))'
+        mo-shen-wang:
+            count: 1
+            attribute: ['M']
+            description: '魔神王'
+            program: 
+              - '[1]/(> |D.ronghe| 0);@;(# X B);(# D.ronghe.1 H))'
         xian-sheng:
             count: 3
             attribute: ['mahou']
@@ -56,7 +90,7 @@ deck:
             attribute: ['trap']
             description: '残响'
         hand-trap:
-            count: 10
+            count: 8
             description: '手坑'
 simulate:
     count: 100
@@ -66,12 +100,9 @@ simulate:
             header: '(= summon 1)'
             combos:
                 A1:
-                    hand:
-                        - a:mahou
                     grave:
                         - a:renyu
                 A2:
                     hand:
-                        - a:trap
-                    grave:
-                        - a:renyu
+                        - ronghe
+                        - a:zhulei

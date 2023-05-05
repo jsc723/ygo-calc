@@ -63,8 +63,8 @@ int main(int argc, char **argv)
             context.addCondition(conditionName, Utils::parse(context, condition));
         }
     }
-    context.print(cout);
-    cout << endl;
+    //context.print(cout);
+    //cout << endl;
 
     Simulator simulator(root["simulate"]);
     simulator.run(deck, context);

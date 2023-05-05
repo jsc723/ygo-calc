@@ -33,7 +33,7 @@ namespace YGO {
 		t_string effect_name(int idx) const;
 		t_string description() const { return m_description; }
 		t_string print_name() const {
-			return m_description.empty() ? m_name : m_description;
+			return m_name + "(" + m_description + ")";
 		}
 		bool test_attribute(const t_string& attr) const;
 		bool test_attribute_wildcard(const t_string& pattern) const;
