@@ -70,3 +70,6 @@ simulate:
                     hand:
                         - HandTrap
                         - HandTrap
+                urara-2:
+                    condition: '(== |H.urara| 2)' #也可以编程使用表达式
+                    

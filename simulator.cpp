@@ -64,6 +64,10 @@ YGO::Simulator::Simulator(YAML::Node simulate)
 					combo.score = combo_node["score"].as<string>();
 				}
 
+				if (combo_node["condition"].IsDefined()) {
+					combo.condition = combo_node["condition"].as<string>();
+				}
+
 				auto combo_hand_node = combo_node["hand"];
 				if (combo_hand_node.IsDefined() && combo_hand_node.IsSequence())
 				{
@@ -82,10 +86,6 @@ YGO::Simulator::Simulator(YAML::Node simulate)
 						t_string cond_k = combo_grave_node[j].as<t_string>();
 						combo.grave_condition_strings.push_back(cond_k);
 					}
-				}
-
-				if (combo.hand_condition_strings.size() + combo.grave_condition_strings.size() == 0) {
-					panic("a combo must have at least one condition");
 				}
 
 				topic.m_combos.emplace_back(std::move(combo));
@@ -195,6 +195,9 @@ void YGO::Simulator::Combo::bind(Context& context)
 
 int YGO::Simulator::Combo::test(Game &g)
 {
+	if (condition.size() && g.compute_number(condition) == 0) {
+		return 0;
+	}
 	auto hand_cards = g.m_hand->to_vector();
 	vector<bool> used(hand_cards.size());
 	for (auto cond : hand_conditions)

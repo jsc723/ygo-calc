@@ -98,6 +98,8 @@ simulate:
                     hand:
                         - HandTrap
                         - HandTrap
+                urara-2:
+                    condition: '(== |H.urara| 2)' #也可以编程使用表达式，计算两只灰流同时上手的概率
 ```
 以上yaml文件先在`deck`中定义了一个虫惑魔卡组（md版本），`deck.cards` 下面列出每种卡的数量（`count`，如果不填默认1），属性(`attribute`， 一个字符串列表，属性的内容任意，也可以不填)，描述(`description`，比如中文名，也可以不填)
 
@@ -158,14 +160,14 @@ ygo-calc.exe
 
 ```
 Simulate 1000 times...
-Time used: 91ms
+Time used: 123ms
 Topic: test-expend
-First turn average success rate: 73.80%    average score: 2.32
-    A1: 73.80%      A2: 45.60%      A3: 29.50%
+First turn average success rate: 87.40%    average score: 2.76
+    A1: 87.40%      A2: 27.90%
 
 Topic: test-hand-trap
-First turn average success rate: 73.50%    average score: 1.05
-    HT1: 73.50%      HT2: 31.40%
+First turn average success rate: 73.10%    average score: 1.12
+    HT1: 73.10%      HT2: 31.30%      urara-2: 3.10%
 
 ```
 注：如果中文description不能正常显示可能是控制台code page的问题，试试控制台中输入`chcp 65001`

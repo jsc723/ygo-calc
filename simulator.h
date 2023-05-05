@@ -17,6 +17,7 @@ namespace YGO {
 		struct Combo {
 			t_string name;
 			t_string score = "1";
+			t_string condition;
 			std::vector<t_string> hand_condition_strings;
 			std::vector<Condition*> hand_conditions;
 			std::vector<t_string> grave_condition_strings;
