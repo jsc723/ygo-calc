@@ -1,6 +1,6 @@
 
 
-# 游戏王牌组构筑辅助工具ygo-calc v2
+# 游戏王概率计算器ygo-calc v2
 
 ## 介绍
 
@@ -16,7 +16,7 @@
 
 - 用户定义卡组（不包括额外）
 - 用户列出所有希望抽到的手牌的组合（或者堆墓希望堆到的牌的组合）
-- 工具模拟很多次抽卡/堆墓，统计抽到希望的组合的概率
+- 工具模拟抽卡/堆墓，统计抽到希望的组合的概率
 
 ## 快速入门
 ### 1. 创建YAML文件
@@ -87,7 +87,7 @@ simulate:
                         - bu-mian-jia
                         - a:trap
         test-hand-trap:
-            start-card: 5
+            start-card: 5  #设置起始手牌数，默认5
             combos:
                 HT1:
                     score: '|H.a:hand-trap|'   #计算手上手坑的个数，详见进阶篇
@@ -101,7 +101,10 @@ simulate:
                 urara-2:
                     condition: '(== |H.urara| 2)' #也可以编程使用表达式，计算两只灰流同时上手的概率
 ```
-以上yaml文件先在`deck`中定义了一个虫惑魔卡组（md版本），`deck.cards` 下面列出每种卡的数量（`count`，如果不填默认1），属性(`attribute`， 一个字符串列表，属性的内容任意，也可以不填)，描述(`description`，比如中文名，也可以不填)
+以上yaml文件先在`deck`中定义了一个虫惑魔卡组（md版本），`deck.cards` 下面列出每种卡的
+- 数量：`count`，如果不填默认1
+- 属性：`attribute`， 一个字符串列表，属性的内容任意，也可以不填
+- 描述：`description`，比如中文名，也可以不填
 
 每种`combos`的`score`必须是一个整数或者`<number>`表达式（见进阶篇），如果不填则默认为1
 
@@ -110,7 +113,7 @@ simulate:
 ```
     alias:
         <别名>: <条件列表>
-            <条件列表>的格式为`<condition1> <condition2>...`，中间用空格隔开
+            <条件列表>的格式为<condition1> <condition2>...，中间用空格隔开
             每个condition之间是逻辑与（&&）关系
             每个condition的格式必须是以下一种：
                 1. 牌组（deck）中定义的卡牌名
@@ -126,12 +129,12 @@ simulate:
     tests:
         <主题名>: 
             <组合名>: 
-                score: <分数> #默认1.0，如匹配多个组合则取最高分
+                score: <分数> #默认1，如同时匹配多个组合则取最高分
                 hand:        #列出想抽到的手牌组合
                     - condition1 （卡名，alias定义的别名，或者<条件列表>）
                     - condition2 
                     ... 
-                grave:       #列出墓地里想堆到的牌
+                grave:       #列出墓地里想堆到的牌（详见进阶篇）
                 	- condition3
                 	...
 ```
@@ -173,12 +176,12 @@ First turn average success rate: 73.10%    average score: 1.12
 注：如果中文description不能正常显示可能是控制台code page的问题，试试控制台中输入`chcp 65001`
 
 ## 进阶篇
-以上的功能能满足大多数的卡组，可是不能模拟有过牌功能的卡抽卡（比如各种壶，万宝槌，手牌抹杀等），也不能模拟卡的效果堆墓。进阶篇中将解决这个问题。大致原理是：
+以上的功能能满足大多数的卡组，可是不好计算有滤抽功能的卡（比如各种壶，万宝槌，手牌抹杀等）时的概率，也不能模拟卡的效果堆墓。进阶篇中将解决这个问题。大致原理是：
 - 定义卡片的同时编写脚本告诉模拟器这张卡的效果（比如可以抽卡，可以堆墓，可以检索）
-- 模拟器在抽到手牌后自动把手牌、墓地中所有能发动的卡牌都发动，直到没有卡牌能发动为止
+- 模拟器在抽到牌后自动把手牌、墓地中所有能发动的卡牌都发动，直到没有卡牌能发动为止
 - 模拟器把手牌、墓地中的卡与列出的希望得到的组合做匹配
 ### 例
-以下文件定义了一个珠泪卡组，并且定义了每张卡如何用于展开
+以下文件定义了一个珠泪卡组，并且定义了先手每张卡如何用于展开（可能不全，也不完全和真实效果匹配，只是一个实例）
 ```yaml
 deck:
     cards:
@@ -234,7 +237,7 @@ deck:
             description: '神巫'
             program: 
               - '[1]/(> summon 0);(= summon (- summon 1));@;(# X F);(# D.a:bin.1 B);(if (> |H.xian-sheng| 0) (# D.3 B) ())'
-        shijie:
+        zhenzhujie:
             count: 2
             attribute: ['mahou']
             description: '珠泪场地'
@@ -300,6 +303,7 @@ simulate:
                         - zhulei-renyu-3
 
 ```
+注：目前还不支持诱发效果，所以地天使被堆墓时的诱发效果全都写成了主动效果
 
 ### 输出样例
 ```
@@ -308,10 +312,10 @@ $ ./ygo-calc.exe zhulei.yml
 -----------run-------------
 execStatement(@)
 execStatement((# X F))
-move {shijie(珠泪场地), }from H to F
+move {zhenzhujie(珠泪场地), }from H to F
 execStatement((if (> |D.zhulei-nanren| 0) (# D.zhulei-nanren.1 H) ()))
 move {zhulei-nanren(珠泪男人), }from D to H
-executed card shijie[0] [珠泪场地]
+executed card zhenzhujie[0] [珠泪场地]
 execStatement(/(> summon 0))
 execStatement((= summon (- summon 1)))
 execStatement(@)
@@ -331,7 +335,7 @@ execStatement(@)
 execStatement((# X F))
 move {zhulei-renyu-2(2星人鱼), }from H to F
 execStatement((# D.3 B))
-move {hand-trap(手坑), shen-wu(神巫), shijie(珠泪场地), }from D to B
+move {hand-trap(手坑), shen-wu(神巫), zhenzhujie(珠泪场地), }from D to B
 execStatement((if (and (> |H.xian-sheng| 0) (< 0 |H.xian-sheng|)) (# D.3 B) ()))
 executed card zhulei-renyu-2[0] [2星人鱼]
 execStatement(/(== summon 1))
@@ -353,8 +357,8 @@ First turn average success rate: 70.00%    average score: 0.70
 <effect> -> [<effect-attributes>]<statements>
        | -> <statements>
 <effect-attributes> -> {1^HB}的任意排列组合
-    "1代表一回合一次，^代表必须在回合开始时就用"
-    "H代表在手牌可以发动，B代表在墓地可以发动，如果不写H或B则默认是在手牌发动"
+    "1代表卡名一回合一次，^代表只能在回合开始时发动"
+    "H代表在手牌时可以发动，B代表在墓地时可以发动，如果不写H或B则默认是在手牌发动"
 
 <statements> ->  <statement>
              |-> <statements>;<statement>            "语句之间用;隔开"
@@ -405,13 +409,13 @@ First turn average success rate: 70.00%    average score: 0.70
     
 ```
 #### 注意事项
-- 每个效果必须有一句`@`语句表示效果成功发动，在效果发动之前尽量不要移动任何卡（否则可能出bug，也可能没bug）
+- **每个效果必须有一句`@`语句表示效果成功发动**，在效果发动之前尽量不要移动任何卡（否则可能出bug，也可能没bug）
 #### 例
 ```
 '[1]/(> summon 0);(= summon (- summon 1));@;(# X F);(# D.a:bin.1 B);(if (> |H.xian-sheng| 0) (# D.3 B) ())'
 ```
 这个效果的意思如下:
-- `[1]`：一回合一次
+- `[1]`：卡名一回合一次
 - `/(> summon 0)`：当summon变量的值大于0时（自己这回合还没召唤过怪兽时）
 - `(= summon (- summon 1))`: summon的值减少1
 - `@`：发动这张卡
