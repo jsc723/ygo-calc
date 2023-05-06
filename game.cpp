@@ -30,23 +30,28 @@ namespace YGO {
 				}
 			}
 		}
-		m_deck = make_shared<DefaultCardCollection>("D", deck_cards.begin() + start_hand_cards, deck_cards.end());
-		m_name_to_collection["D"] = m_deck;
-		m_hand = make_shared<DefaultCardCollection>("H", hand_cards.begin(), hand_cards.end());
-		m_name_to_collection["H"] = m_hand;
-		m_field = make_shared<DefaultCardCollection>("F");
-		m_name_to_collection["F"] = m_field;
-		m_bochi = make_shared<DefaultCardCollection>("B");
-		m_name_to_collection["B"] = m_bochi;
-		m_jyogai = make_shared<DefaultCardCollection>("J");
-		m_name_to_collection["J"] = m_jyogai;
+		m_collections["D"] = make_shared<DefaultCardCollection>("D", deck_cards.begin() + start_hand_cards, deck_cards.end());;
+
+		m_collections["H"] = make_shared<DefaultCardCollection>("H", hand_cards.begin(), hand_cards.end());;
+
+		for (char c = 'A'; c <= 'Z'; c++) {
+			if (c == 'X') {
+				continue; //X is reserved for "this card"
+			}
+			stringstream ss;
+			ss << c;
+			auto name = ss.str();
+			if (!m_collections.count(name)) {
+				m_collections[name] = make_shared<DefaultCardCollection>(name);
+			}
+		}
 
 	}
 
 
 	void Game::run() {
 		if (m_header.size()) {
-			Executor e(this, this->m_hand, this->m_hand->end(), 0);
+			Executor e(this, m_collections["H"], m_collections["H"]->end(), 0);
 			e.run_program(m_header);
 		}
 		if (m_debug) {
@@ -58,7 +63,8 @@ namespace YGO {
 		{
 			loop_begin:
 			cont = false;
-			for (auto col : { m_hand, m_bochi }) {
+			for (auto col_name : { "H", "B" }) {
+				auto col = m_collections[col_name];
 				for (auto it = col->begin(); it != col->end(); ++it) {
 					Card c = *it;
 					for (int i = 0; i < c.m_effects.size(); i++) {
@@ -121,12 +127,13 @@ namespace YGO {
 	}
 
 	int YGO::Game::compute_number(t_string number) {
-		Executor e(this, this->m_hand, this->m_hand->end(), 0);
+		auto h = this->m_collections["H"];
+		Executor e(this, h, h->end(), 0);
 		return e.compute_number(number);
 	}
 
 	std::shared_ptr<CardCollection> YGO::Game::find_card_position(CardNode card_it) {
-		for (auto c : { m_hand, m_field, m_bochi, m_jyogai, m_deck }) {
+		for (auto [name, c]: m_collections) {
 			for (auto it = c->begin(); it != c->end(); ++it) {
 				if (card_it == it) {
 					return c;
@@ -265,8 +272,8 @@ namespace YGO {
 			params = parseParams(s, { &Executor::execNumber });
 			int draw_count = std::dynamic_pointer_cast<Yisp::Number>(params[0])->num;
 			list<Card> drawed_cards;
-			m_game->m_deck->pop_front(draw_count, drawed_cards);
-			m_game->m_hand->push_back(drawed_cards);
+			m_game->m_collections["D"]->pop_front(draw_count, drawed_cards);
+			m_game->m_collections["H"]->push_back(drawed_cards);
 			if (m_game->m_debug) {
 				printf("draw %d\n", draw_count);
 			}
@@ -450,8 +457,8 @@ namespace YGO {
 		vector<t_string> ws = split(w, ".");
 		shared_ptr<CardCollection> collection = nullptr;
 
-		if (m_game->m_name_to_collection.count(ws[0])) {
-			collection = m_game->m_name_to_collection[ws[0]];
+		if (m_game->m_collections.count(ws[0])) {
+			collection = m_game->m_collections[ws[0]];
 		}
 		else if (ws[0] == "X") {
 			shared_ptr<Yisp::CardSet> card_set(make_shared<Yisp::CardSet>());

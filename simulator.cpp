@@ -218,7 +218,7 @@ int YGO::Simulator::Combo::test(Game &g)
 	if (condition.size() && g.compute_number(condition) == 0) {
 		return 0;
 	}
-	auto hand_cards = g.m_hand->to_vector();
+	auto hand_cards = g.m_collections["H"]->to_vector();
 	vector<bool> used(hand_cards.size());
 	for (auto cond : hand_conditions)
 	{
@@ -238,7 +238,7 @@ int YGO::Simulator::Combo::test(Game &g)
 		}
 	}
 
-	auto grave_cards = g.m_bochi->to_vector();
+	auto grave_cards = g.m_collections["B"]->to_vector();
 	used = vector<bool>(grave_cards.size());
 	for (auto cond : grave_conditions)
 	{

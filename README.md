@@ -394,8 +394,10 @@ First turn average success rate: 70.00%    average score: 0.70
             "相当于<第一个number> <op> <第二个number>"
 <op> -> +|-|>|<|==|and|or|r
     "其中r代表random，(r x y) 代表随机取一个[x, y]之间的整数"
-<card-collection> -> H|D|F|B|J|X
-    "H: 手牌，D：卡组，F：场上，B：墓地，J：除外，X：正在执行的这张卡"
+<card-collection> -> [A-Z]
+    "用一个大写字母表示卡的位置，其中规定H: 手牌，D：卡组，F：场上，B：墓地，J：除外，X：正在执行的这张卡"
+    "其他字母没有特别规定，用户可以随意使用（比如把E规定为额外卡组上表侧表示的卡，S规定为超量素材等等）"
+    "除了H和D，其他位置初始状态都为空"
 <cardset> -> <card-collection>
         |->  <card-collection><cardset-filters>
     "<cardset>从一个<card-collection>开始，后面可以跟一连串的<cardset-filter>"
