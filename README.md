@@ -182,7 +182,81 @@ First turn average success rate: 74.40% +- 2.70%  average score: 1.12 +- 0.05
 - 定义卡片的同时编写脚本告诉模拟器这张卡的效果（比如可以抽卡，可以堆墓，可以检索）
 - 模拟器在抽到牌后自动把手牌、墓地中所有能发动的卡牌都发动，直到没有卡牌能发动为止
 - 模拟器把手牌、墓地中的卡与列出的希望得到的组合做匹配
-### 例
+
+### 卡牌效果脚本
+每个效果的语法详细定义、用法如下（注：//中间的部分是正则表达式）
+```
+<effect> -> [<effect-attributes>]<statements>
+       | -> <statements>
+<effect-attributes> -> {1^HB}的任意排列组合
+    "1代表卡名一回合一次，^代表只能在回合开始时发动"
+    "H代表在手牌时可以发动，B代表在墓地时可以发动，如果不写H或B则默认是在手牌发动"
+
+<statements> ->  <statement>
+             |-> <statements>;<statement>            "语句之间用;隔开"
+<statement> ->  @                                    "发动效果，见注意事项"
+            |-> /<number>                            "如果<number>的值为0则不再执行后续语句"
+            |-> <expression>
+<expression> -> () 
+                "空表达式，什么都不做"
+            |-> (% <number>)
+                "从卡组抽<number>张"   
+            |-> (# <cardset> <card-collection>) 
+                "把<cardset>的卡全部加入到<card-collection>中"   
+            |-> ($ <cardset> <number> <cardset>) 
+                "从第一个<cardset>选择<number>张加入第二个<cardset>"
+            |-> (! <string>)
+                "禁止本回合再执行<string>命令，例如(! %)禁止抽卡"
+            |-> (= <varname> <number>)
+                "把变量<varname>的值设置为<number>"
+                "如果<varname>的长度在两个字符以上，则这个变量的值在当前回合一直有效（全局变量）"
+                "否则只在当前效果执行期间有效（临时变量）"
+            |-> (if <number> <expression> <expression>)
+                "如果<number>不为0则执行第一个<expression>，否则执行第二个"
+<varname> -> [a-z]+
+<string> -> /[^\s()]/
+<number-literal> -> /[0-9]+/
+<number> -> <number-literal>
+        |-> <var-name>
+        |-> |<cardset>|
+            "得到<cardset>的大小(卡的数量)"
+        |-> (<op> <number> <number>)
+            "相当于<第一个number> <op> <第二个number>"
+<op> -> +|-|>|<|==|and|or|r
+    "其中r代表random，(r x y) 代表随机取一个[x, y]之间的整数"
+<card-collection> -> [A-Z]
+    "用一个大写字母表示卡的位置，其中规定H: 手牌，D：卡组，F：场上，B：墓地，J：除外，X：正在执行的这张卡"
+    "其他字母没有特别规定，用户可以随意使用（比如把E规定为额外卡组上表侧表示的卡，S规定为超量素材等等）"
+    "除了H和D，其他位置初始状态都为空"
+<cardset> -> <card-collection>
+        |->  <card-collection><cardset-filters>
+    "<cardset>从一个<card-collection>开始，后面可以跟一连串的<cardset-filter>"
+    "每个<cardset-filter>用.隔开"
+<cardset-filters> -> <cardset-filter>
+                |->  <cardset-filter><cardset-filters>
+<cardset-filter> -> .<card-name>
+                    "选取集合中所有卡名为<card-name>的卡"
+                |-> .a:<card-attribute>
+                    "选取集合中所有拥有<card-attribute>属性的卡（不支持模糊匹配）"
+                |-> .<number-literal>
+                    "选取集合中前<number-literal>张卡"
+    
+```
+#### 注意事项
+- **每个效果必须有一句`@`语句表示效果成功发动**，在效果发动之前尽量不要移动任何卡（否则可能出bug，也可能没bug）
+#### 例
+```
+'[1]/(> summon 0);(= summon (- summon 1));@;(# X F);(# D.a:bin.1 B);(if (> |H.xian-sheng| 0) (# D.3 B) ())'
+```
+这个效果的意思如下:
+- `[1]`：卡名一回合一次
+- `/(> summon 0)`：当summon变量的值大于0时（自己这回合还没召唤过怪兽时）
+- `(= summon (- summon 1))`: summon的值减少1
+- `@`：发动这张卡
+- `(# X F)`：把这张卡（`X`）移动到场上（`F`）（召唤）
+- `(# D.a:bin.1 B)`：从牌组（`D`）选一只具有`bin`属性的卡（即古尖兵或古卫兵）送入墓地(`B`)
+- `(if (> |H.xian-sheng| 0) (# D.3 B) ())` 如果手牌中有弦声`(> |H.xian-sheng| 0)`, 则把牌组顶端3张卡(`D.3`)送入墓地(`B`)，否则什么也不做(`()`) (注：严格来说场上有弦声才能触发堆3张的效果，不过这里为了简化程序就写了手牌)
+
 以下文件定义了一个珠泪卡组，并且定义了先手每张卡如何用于展开（可能不全，也不完全和真实效果匹配，只是一个实例）
 ```yaml
 deck:
@@ -353,79 +427,7 @@ First turn average success rate: 70.00%    average score: 0.70
 ```
 可以看到模拟器会自动发动卡牌展开（只需要展开到随机部分结束就行了）
 
-### 卡牌效果脚本
-每个效果的语法详细定义、用法如下（注：//中间的部分是正则表达式）
-```
-<effect> -> [<effect-attributes>]<statements>
-       | -> <statements>
-<effect-attributes> -> {1^HB}的任意排列组合
-    "1代表卡名一回合一次，^代表只能在回合开始时发动"
-    "H代表在手牌时可以发动，B代表在墓地时可以发动，如果不写H或B则默认是在手牌发动"
 
-<statements> ->  <statement>
-             |-> <statements>;<statement>            "语句之间用;隔开"
-<statement> ->  @                                    "发动效果，见注意事项"
-            |-> /<number>                            "如果<number>的值为0则不再执行后续语句"
-            |-> <expression>
-<expression> -> () 
-                "空表达式，什么都不做"
-            |-> (% <number>)
-                "从卡组抽<number>张"   
-            |-> (# <cardset> <card-collection>) 
-                "把<cardset>的卡全部加入到<card-collection>中"   
-            |-> ($ <cardset> <number> <cardset>) 
-                "从第一个<cardset>选择<number>张加入第二个<cardset>"
-            |-> (! <string>)
-                "禁止本回合再执行<string>命令，例如(! %)禁止抽卡"
-            |-> (= <varname> <number>)
-                "把变量<varname>的值设置为<number>"
-                "如果<varname>的长度在两个字符以上，则这个变量的值在当前回合一直有效（全局变量）"
-                "否则只在当前效果执行期间有效（临时变量）"
-            |-> (if <number> <expression> <expression>)
-                "如果<number>不为0则执行第一个<expression>，否则执行第二个"
-<varname> -> [a-z]+
-<string> -> /[^\s()]/
-<number-literal> -> /[0-9]+/
-<number> -> <number-literal>
-        |-> <var-name>
-        |-> |<cardset>|
-            "得到<cardset>的大小(卡的数量)"
-        |-> (<op> <number> <number>)
-            "相当于<第一个number> <op> <第二个number>"
-<op> -> +|-|>|<|==|and|or|r
-    "其中r代表random，(r x y) 代表随机取一个[x, y]之间的整数"
-<card-collection> -> [A-Z]
-    "用一个大写字母表示卡的位置，其中规定H: 手牌，D：卡组，F：场上，B：墓地，J：除外，X：正在执行的这张卡"
-    "其他字母没有特别规定，用户可以随意使用（比如把E规定为额外卡组上表侧表示的卡，S规定为超量素材等等）"
-    "除了H和D，其他位置初始状态都为空"
-<cardset> -> <card-collection>
-        |->  <card-collection><cardset-filters>
-    "<cardset>从一个<card-collection>开始，后面可以跟一连串的<cardset-filter>"
-    "每个<cardset-filter>用.隔开"
-<cardset-filters> -> <cardset-filter>
-                |->  <cardset-filter><cardset-filters>
-<cardset-filter> -> .<card-name>
-                    "选取集合中所有卡名为<card-name>的卡"
-                |-> .a:<card-attribute>
-                    "选取集合中所有拥有<card-attribute>属性的卡（不支持模糊匹配）"
-                |-> .<number-literal>
-                    "选取集合中前<number-literal>张卡"
-    
-```
-#### 注意事项
-- **每个效果必须有一句`@`语句表示效果成功发动**，在效果发动之前尽量不要移动任何卡（否则可能出bug，也可能没bug）
-#### 例
-```
-'[1]/(> summon 0);(= summon (- summon 1));@;(# X F);(# D.a:bin.1 B);(if (> |H.xian-sheng| 0) (# D.3 B) ())'
-```
-这个效果的意思如下:
-- `[1]`：卡名一回合一次
-- `/(> summon 0)`：当summon变量的值大于0时（自己这回合还没召唤过怪兽时）
-- `(= summon (- summon 1))`: summon的值减少1
-- `@`：发动这张卡
-- `(# X F)`：把这张卡（`X`）移动到场上（`F`）（召唤）
-- `(# D.a:bin.1 B)`：从牌组（`D`）选一只具有`bin`属性的卡（即古尖兵或古卫兵）送入墓地(`B`)
-- `(if (> |H.xian-sheng| 0) (# D.3 B) ())` 如果手牌中有弦声`(> |H.xian-sheng| 0)`, 则把牌组顶端3张卡(`D.3`)送入墓地(`B`)，否则什么也不做(`()`) (注：严格来说场上有弦声才能触发堆3张的效果，不过这里为了简化程序就写了手牌)
 
 
 
