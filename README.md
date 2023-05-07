@@ -225,7 +225,7 @@ First turn average success rate: 74.40% +- 2.70%  average score: 1.12 +- 0.05
             "得到<cardset>的大小(卡的数量)"
         |-> (<op> <number> <number>)
             "相当于<第一个number> <op> <第二个number>"
-<op> -> +|-|>|<|==|and|or|r
+<op> -> +|-|*|/|>|>=|<|<=|==|and|or|r
     "其中r代表random，(r x y) 代表随机取一个[x, y]之间的整数"
 <card-collection> -> [A-Z]
     "用一个大写字母表示卡的位置，其中规定H: 手牌，D：卡组，F：场上，B：墓地，J：除外，X：正在执行的这张卡"
