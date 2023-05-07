@@ -446,11 +446,23 @@ namespace YGO {
 			else if (op == "-") {
 				res = num1 - num2;
 			}
+			else if (op == "*") {
+				res = num1 * num2;
+			}
+			else if (op == "/") {
+				res = num1 / num2;
+			}
 			else if (op == ">") {
 				res = num1 > num2;
 			}
 			else if (op == "<") {
 				res = num1 < num2;
+			}
+			else if (op == ">=") {
+				res = num1 >= num2;
+			}
+			else if (op == "<=") {
+				res = num1 <= num2;
 			}
 			else if (op == "==") {
 				res = num1 == num2;
