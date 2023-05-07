@@ -79,6 +79,9 @@ namespace YGO {
 						if (c.m_effects[i].exec_at_beginning() && executed_count != 0) {
 							continue;
 						}
+						if (is_forbidden(c.m_effects[i].m_program)) {
+							continue;
+						}
 						cont = execute_card(col, it, i);
 						if (cont) {
 							//success to execute
@@ -141,6 +144,17 @@ namespace YGO {
 			}
 		}
 		return shared_ptr<CardCollection>();
+	}
+
+	bool YGO::Game::is_forbidden(const string& program)
+	{
+		for (auto forbidden_func : m_forbidden_funcs) {
+			auto tag = forbidden_func + "!";
+			if (program.find(tag) != std::string::npos) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	//------------------------CardSet-----------------------------//
@@ -235,7 +249,7 @@ namespace YGO {
 			params.push_back(parserFuncs[i++](this, s));
 			remove_space(s);
 			if (s.peek() == std::char_traits<char>::eof()) {
-				panic("Unexpected eof in execFunc");
+				panic("Unexpected eof in execFunc " + s.str());
 			}
 		}
 		remove_space(s);
@@ -245,11 +259,33 @@ namespace YGO {
 		return params;
 	}
 
+	//last param type can repeat any times
+	vector< shared_ptr<Yisp::Object> > Executor::parseVarLenParams(stringstream& s, vector<parser_t> parserFuncs)
+	{
+		vector< shared_ptr<Yisp::Object> > params;
+		int i = 0;
+		while (s.peek() != ')') {
+			if (i == parserFuncs.size()) {
+				i--;
+			}
+			params.push_back(parserFuncs[i++](this, s));
+			remove_space(s);
+			if (s.peek() == std::char_traits<char>::eof()) {
+				panic("Unexpected eof in execFunc " + s.str());
+			}
+		}
+		remove_space(s);
+		return params;
+	}
+
 	shared_ptr<Yisp::Object> Executor::execExpr(std::stringstream& s)
 	{
 		char c = s.get();
 		if (c != '(') {
 			panic("wrong expression: " + s.str());
+		}
+		if (isspace(s.peek())) {
+			panic("wrong expression '(' followed by space: " + s.str());
 		}
 		if (s.peek() == ')') {
 			//empty expression, do nothing
@@ -259,30 +295,21 @@ namespace YGO {
 		s >> f;
 		remove_space(s);
 		vector< shared_ptr<Yisp::Object> > params;
-
-		//check if the function is forbidden
-		if (m_game->m_forbidden_funcs.count(f)) {
-			m_cond_break = true;
-			return Yisp::Void::get();
-		}
 		
-		
-		if(f == "%") //draw
+		if(f == "#") //move
 		{
-			params = parseParams(s, { &Executor::execNumber });
-			int draw_count = std::dynamic_pointer_cast<Yisp::Number>(params[0])->num;
-			list<Card> drawed_cards;
-			m_game->m_collections["D"]->pop_front(draw_count, drawed_cards);
-			m_game->m_collections["H"]->push_back(drawed_cards);
-			if (m_game->m_debug) {
-				printf("draw %d\n", draw_count);
+			params = parseVarLenParams(s, { &Executor::execSet, &Executor::execSet, &Executor::execString });
+			if (params.size() < 2) {
+				panic("Need at least 2 arguments for #: " + s.str());
 			}
-		}
-		else if(f == "#") //move
-		{
-			params = parseParams(s, { &Executor::execSet, &Executor::execSet });
 			auto src = std::dynamic_pointer_cast<Yisp::CardSet>(params[0]);
 			auto dst = std::dynamic_pointer_cast<Yisp::CardSet>(params[1]);
+			for (int i = 2; i < params.size(); i++) {
+				string mtype = std::dynamic_pointer_cast<Yisp::String>(params[i])->s;
+				if (m_game->m_debug) {
+					cout << "[" << mtype << "] ";
+				}
+			}
 
 			if (src->size() == 0) {
 				panic("# source should not be empty, check program: " + s.str());
@@ -291,6 +318,7 @@ namespace YGO {
 				cout << "move " << *src << "from " << src->collection->name() << " to " << dst->collection->name() << endl;
 			}
 			src->move_to_back(dst->collection);
+			dst->collection->shuffle();
 		}
 		else if (f == "$") //select
 		{
@@ -391,6 +419,7 @@ namespace YGO {
 				return c >= 'a' && c <= 'z';
 			});
 			int val = x.size() == 1 ? m_vars[x[0]] : m_game->m_vars[x];
+			//printf("%s = %d\n", x.c_str(), val);
 			return make_shared<Yisp::Number>(val);
 		}
 		if (c == '|') {
@@ -457,10 +486,10 @@ namespace YGO {
 		vector<t_string> ws = split(w, ".");
 		shared_ptr<CardCollection> collection = nullptr;
 
-		if (m_game->m_collections.count(ws[0])) {
+		if (m_game->m_collections.count(ws[0])) { //card collection
 			collection = m_game->m_collections[ws[0]];
 		}
-		else if (ws[0] == "X") {
+		else if (ws[0] == "X") { //current card
 			shared_ptr<Yisp::CardSet> card_set(make_shared<Yisp::CardSet>());
 			card_set->collection = m_game->find_card_position(m_card_it);
 			card_set->cards_its.push_back(m_card_it);
@@ -473,14 +502,20 @@ namespace YGO {
 
 		for (int i = 1; i < ws.size(); i++) {
 			auto w = ws[i];
-			if (w[0] >= '0' && w[0] <= '9') {
+			if (w[0] >= '0' && w[0] <= '9') { //number literal
 				stringstream temp_ss;
 				temp_ss << w;
 				int u;
 				temp_ss >> u;
 				card_set = card_set->subset(u);
 			}
-			else {
+			else if (w[0] == ':') { //variable
+				stringstream temp_ss;
+				temp_ss << w.substr(1);
+				int u = execNumber(temp_ss)->num;
+				card_set = card_set->subset(u);
+			}
+			else { //attribute
 				card_set = card_set->subset(w);
 			}
 		}
@@ -513,6 +548,7 @@ namespace YGO {
 		for (char c = '0'; c <= '9'; c++) {
 			m_set_allowed_chars[c] = true;
 		}
+		m_set_allowed_chars['_'] = true;
 		m_set_allowed_chars['-'] = true;
 		m_set_allowed_chars[':'] = true;
 		m_set_allowed_chars['.'] = true;
@@ -523,7 +559,8 @@ namespace YGO {
 	{
 		
 		Card card = *m_card_it;
-		vector<t_string> statements = split(card.m_effects[m_opt].m_program, ";");
+		t_string program = card.m_effects[m_opt].m_program;
+		vector<t_string> statements = split(program, ";");
 		for (auto statement : statements) {
 			//printf("---------%s-----------", statement.c_str());
 			//printf("deck: %d, hand: %d\n", m_game->m_deck->size(), m_game->m_hand->size());

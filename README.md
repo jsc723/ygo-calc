@@ -199,21 +199,24 @@ First turn average success rate: 74.40% +- 2.70%  average score: 1.12 +- 0.05
             |-> <expression>
 <expression> -> () 
                 "空表达式，什么都不做"
-            |-> (% <number>)
-                "从卡组抽<number>张"   
             |-> (# <cardset> <card-collection>) 
-                "把<cardset>的卡全部加入到<card-collection>中"   
+                "把<cardset>的卡全部加入到<card-collection>中"
+            |-> (# <cardset> <card-collection> <tags>) 
+                "同上，同时为这个动作添加一系列标签进行描述（如抽卡，召唤）"
             |-> ($ <cardset> <number> <cardset>) 
                 "从第一个<cardset>选择<number>张加入第二个<cardset>"
             |-> (! <string>)
-                "禁止本回合再执行<string>命令，例如(! %)禁止抽卡"
+                "禁止本回合再执行标有<string>!的效果，例如(! draw)禁止所有标有draw!的效果"
             |-> (= <varname> <number>)
                 "把变量<varname>的值设置为<number>"
                 "如果<varname>的长度在两个字符以上，则这个变量的值在当前回合一直有效（全局变量）"
                 "否则只在当前效果执行期间有效（临时变量）"
             |-> (if <number> <expression> <expression>)
                 "如果<number>不为0则执行第一个<expression>，否则执行第二个"
-<varname> -> [a-z]+
+<tags>  -> <tag>
+       |-> <tag> <tags>
+<tag> -> <string>!
+<varname> -> /[a-z]+/
 <string> -> /[^\s()]/
 <number-literal> -> /[0-9]+/
 <number> -> <number-literal>

@@ -94,7 +94,7 @@ deck:
             description: '手坑'
 simulate:
     debug: false
-    count: 100
+    count: 1000
     tests:
         test-expend:
             exec-program: true

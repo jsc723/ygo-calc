@@ -76,6 +76,7 @@ namespace YGO {
 		int compute_number(t_string program);
 		void select_add_hand_card(Yisp::CardSet& to_select, int k, std::shared_ptr<CardCollection> &dst);
 		std::shared_ptr<CardCollection> find_card_position(CardNode it);
+		bool is_forbidden(const std::string& program);
 		t_string m_header;
 		std::unordered_map<t_string, std::shared_ptr<CardCollection>> m_collections;
 		YGO::condition_set_t m_wanted_hand_conds;
@@ -112,6 +113,7 @@ namespace YGO {
 		std::shared_ptr<Yisp::Object> execStatement(std::stringstream& s);
 		std::shared_ptr<Yisp::Object> execExpr(std::stringstream& s);
 		std::vector< std::shared_ptr<Yisp::Object> > parseParams(std::stringstream& s, std::vector<parser_t> parserFuncs);
+		std::vector< std::shared_ptr<Yisp::Object> > parseVarLenParams(std::stringstream& s, std::vector<parser_t> parserFuncs);
 		std::shared_ptr<Yisp::Number> execNumber(std::stringstream& s);
 		std::shared_ptr<Yisp::CardSet> execSet(std::stringstream& s);
 		std::shared_ptr<Yisp::String> execString(std::stringstream& s);

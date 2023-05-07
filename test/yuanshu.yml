@@ -1,0 +1,94 @@
+deck:
+    cards:
+        yuanshu-wall:
+            count: 3
+            attribute: ['field']
+            description: '源数壁'
+        rongyan-moshen:
+            count: 3
+            attribute: ['solve-front', 'xsj']
+            description: '熔岩魔神'
+        huaishou:
+            count: 4
+            attribute: ['solve-front', 'xsj']
+            description: '坏兽'
+        e-demon:
+            count: 2
+            attribute: ['solve-back', 'xsj']
+            description: '古怪恶魔'
+        yu-mao-sao:
+            attribute: ['solve-back']
+            description: '羽毛扫'
+        tera-forming:
+            attribute: ['field']
+            description: '星球改造'
+        lighting-storm:
+            count: 3
+            attribute: ['solve-back']
+            description: '闪电风暴'
+        rishi:
+            count: 2
+            attribute: ['solve-front']
+            description: '日食书'
+        yuanshu-direct:
+            count: 2
+            description: '源数直升'
+        yuanshu-network:
+            count: 3
+            attribute: ['field']
+            description: '源数网络'
+        limit-release:
+            count: 2
+            description: '限制解除'
+        twin-twister:
+            count: 1
+            attribute: ['solve-back']
+            description: '双龙卷'
+        red-reboot:
+            attribute: ['solve-back']
+            description: '红色重启'
+        urara:
+            count: 3
+            attribute: ['hand-trap', 'xsj']
+            description: '灰流丽'
+        zou-g:
+            count: 3
+            attribute: ['hand-trap']
+            description: '增殖G'
+        tan-suo-che:
+            count: 0
+            attribute: ['field']
+            description: '行星探测车'
+        xiao-shi-jie:
+            count: 3
+            description: '小世界'
+            program:
+                - '/!usedxsj;/(== 0 |H.a:field|);/(> |H.a:xsj| 0);@;(# X B);(# H.a:xsj.1 L);(# D.yuanshu-wall.1 H);(= usedxsj 1)'
+                - '/!usedxsj;/(== 0 |H.a:solve-front|);/(> |H.a:xsj| 0);@;(# X B);(# H.a:xsj.1 L);(# D.a:solve-front.1 H);(= usedxsj 1)'
+                - '/!usedxsj;/(== 0 |H.a:solve-back|);/(> |H.a:xsj| 0);@;(# X B);(# H.a:xsj.1 L);(# D.a:solve-back.1 H);(= usedxsj 1)'
+        kotuchi:
+            count: 3
+            description: '万宝槌'
+            program: 
+                - '/(or usedxsj (== 0 |H.xiao-shi-jie|));/(== 0 |H.a:field|);@;(# X B);(= x |H|);(# H D);(# D.:x H draw!)'
+                - '/(or usedxsj (== 0 |H.xiao-shi-jie|));/(> 2 (+ |H.a:solve-front| |H.a:solve-back|));@;(# X B);(= x |H|);(# H D);(# D.:x H draw!)'
+
+        
+    alias:
+        HandTrap: a:hand-trap
+simulate:
+    count: 1000
+    debug: false
+    confidence-interval: true
+    tests:
+        test-a:
+            start-card: 6
+            exec-program: true
+            combos:
+                A1:
+                    hand:
+                        - a:field
+                        - a:solve-front
+                        - a:solve-back
+
+        
