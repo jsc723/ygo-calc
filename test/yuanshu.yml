@@ -70,8 +70,8 @@ deck:
             count: 3
             description: '万宝槌'
             program: 
-                - '/(or usedxsj (== 0 |H.xiao-shi-jie|));/(== 0 |H.a:field|);@;(# X B);(= x |H|);(# H D);(# D.:x H draw!)'
-                - '/(or usedxsj (== 0 |H.xiao-shi-jie|));/(> 2 (+ |H.a:solve-front| |H.a:solve-back|));@;(# X B);(= x |H|);(# H D);(# D.:x H draw!)'
+                - '/(or usedxsj (== 0 |H.xiao-shi-jie|));/(== 0 |H.a:field|);@;(# X B);(= x |H|);(# H D);(# D.:x H [draw])'
+                - '/(or usedxsj (== 0 |H.xiao-shi-jie|));/(> 2 (+ |H.a:solve-front| |H.a:solve-back|));@;(# X B);(= x |H|);(# H D);(# D.:x H [draw])'
 
         
     alias:

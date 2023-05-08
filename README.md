@@ -184,8 +184,11 @@ First turn average success rate: 74.40% +- 2.70%  average score: 1.12 +- 0.05
 - 模拟器把手牌、墓地中的卡与列出的希望得到的组合做匹配
 
 ### 卡牌效果脚本
-每个效果的语法详细定义、用法如下（注：//中间的部分是正则表达式）
+我把这个脚本的语言称作Yisp（借鉴LISP）
+每个效果的语法详细定义、用法如下（注：//中间的部分是正则表达式, <EMPTY>就是什么也没有）
 ```
+"Yisp v0.4 documentation"
+
 <effect> -> [<effect-attributes>]<statements>
        | -> <statements>
 <effect-attributes> -> {1^HB}的任意排列组合
@@ -200,11 +203,14 @@ First turn average success rate: 74.40% +- 2.70%  average score: 1.12 +- 0.05
 <expression> -> () 
                 "空表达式，什么都不做"
             |-> (# <cardset> <card-collection>) 
-                "把<cardset>的卡全部加入到<card-collection>中"
-            |-> (# <cardset> <card-collection> <tags>) 
+                "把<cardset>的卡全部加入到<card-collection>末尾（底端）"
+            |-> (# <cardset> <card-collection> <action-tags>) 
                 "同上，同时为这个动作添加一系列标签进行描述（如抽卡，召唤）"
-            |-> ($ <cardset> <number> <cardset>) 
-                "从第一个<cardset>选择<number>张加入第二个<cardset>"
+            |-> (## <cardset> <card-collection>) 
+            |-> (## <cardset> <card-collection> <action-tags>) 
+                "同#，区别是把<cardset>加入到开头（顶端）"
+            |-> (shuffle <card-collection>)
+                "洗切<card-collection>"
             |-> (! <string>)
                 "禁止本回合再执行标有<string>!的效果，例如(! draw)禁止所有标有draw!的效果"
             |-> (= <varname> <number>)
@@ -213,11 +219,17 @@ First turn average success rate: 74.40% +- 2.70%  average score: 1.12 +- 0.05
                 "否则只在当前效果执行期间有效（临时变量）"
             |-> (if <number> <expression> <expression>)
                 "如果<number>不为0则执行第一个<expression>，否则执行第二个"
-<tags>  -> <tag>
-       |-> <tag> <tags>
-<tag> -> <string>!
-<varname> -> /[a-z]+/
-<string> -> /[^\s()]/
+            |-> (block <expression-list>)
+                "顺序执行<expression-list>中所有<expression>"
+            |-> (print <expression-list>)
+                "打印<expression-list>中的<expression>，中间用空格隔开，最后换行
+<expression-list> -> <expression>
+                  |-> <expression> <expression-list>
+<action-tags>  -> <action-tag>
+       |-> <action-tag> <action-tags>
+<action-tag> -> [/[^;]+/]
+<varname> -> /[a-z][a-zA-Z0-9]*/
+<string> -> "/[^;]*/"
 <number-literal> -> /[0-9]+/
 <number> -> <number-literal>
         |-> <var-name>
@@ -225,8 +237,13 @@ First turn average success rate: 74.40% +- 2.70%  average score: 1.12 +- 0.05
             "得到<cardset>的大小(卡的数量)"
         |-> (<op> <number> <number>)
             "相当于<第一个number> <op> <第二个number>"
-<op> -> +|-|*|/|>|>=|<|<=|==|and|or|r
-    "其中r代表random，(r x y) 代表随机取一个[x, y]之间的整数"
+        |-> (<multi-op> <number-list>)
+            "相当于把<number-list>中所有数字用<op>连接"
+<number-list> -> <number> <number>
+              -> <number> <number-list>
+<op> -> -|/|>|>=|<|<=|==|rand
+<multi-op> -> +|*|and|or
+    "其中rand代表random，(rand x y) 代表随机取一个[x, y]之间的整数"
 <card-collection> -> [A-Z]
     "用一个大写字母表示卡的位置，其中规定H: 手牌，D：卡组，F：场上，B：墓地，J：除外，X：正在执行的这张卡"
     "其他字母没有特别规定，用户可以随意使用（比如把E规定为额外卡组上表侧表示的卡，S规定为超量素材等等）"
@@ -430,7 +447,64 @@ First turn average success rate: 70.00%    average score: 0.70
 ```
 可以看到模拟器会自动发动卡牌展开（只需要展开到随机部分结束就行了）
 
+## 更新日志
+#### v2.5
+Yisp v0.4
+- 支持`##`语句（移动到集合顶端）
+- 移除`$`，改为由用户自己写逻辑实现
+- 规范化了`<string>`,`<action-tag>`和`<varname>`的区别
+- 支持`print`语句
+- 支持`block`语句
+- 重新实现洗牌操作，添加`shuffle`语句
+- 修复读取变长参数列表时的bug
+- 支持能处理变长参数列表的操作符(`+|*|and|or`)
+- 重构操作符分发方式
+#### v2.4
+Yisp v0.3
+- 支持操作符(*|/|>=|<=)
+- 抽牌由`#`实现，移除`%`操作
+- 添加`<action-tag>`，确保了效果执行的原子性
+#### v2.3
+Yisp v0.2
+- 每个大写字母都能作为`<card-collection>`使用
+#### v2.2
+- 可显示置信区间
+#### v2.1
+- combo支持condition
 
+#### v2.0
+- 发布Yisp语言v0.1（卡牌效果脚本语言）
+    - 语句，表达式，字符串，数字
+    - 卡牌集合`<card-collection>`，`<card-set>`
+    - 条件过滤`<card-filters>`
+    - 条件break（`/<number>`)
+    - 抽卡
+    - 移动卡牌
+    - 选择卡牌
+    - 禁止命令
+    - if语句
+    - 操作符`（+|-|>|<|==|and|or|r)`
+    - 变量
+    - 效果属性`<effect-attributes>`
+- 支持score的`<number>`表达式
+- 去除了旧版的`turns`
+- 每个主题可以设置不同初始手牌
 
+#### v1.4
+- 添加`score`
+- 添加combo匿名条件
 
+#### v1.3
+- 添加topics
 
+#### v1.2
+- 支持从stdin读取yaml文件名
+
+#### v1.1
+- 支持模糊匹配attribute
+
+#### v1.0
+- 支持测试抽到某些手牌组合的概率
+- 支持多个回合
+- 支持匹配卡牌名、属性
+- 支持条件组合的别名

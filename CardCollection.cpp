@@ -17,11 +17,21 @@ void YGO::DefaultCardCollection::move_to(YGO::CardNode& card_node, YGO::CardColl
 void YGO::DefaultCardCollection::shuffle()
 {
 	std::random_device rd;
-	int k = cards.size() / 2;
-	auto mid = cards.begin();
-	std::advance(mid, k);
-	std::list<Card> tmp;
-	tmp.splice(tmp.begin(), cards, cards.begin(), mid);
-	cards.splice(cards.end(), tmp);
-	//std::shuffle(cards.begin(), cards.end(), rd);
+	vector<list<Card>> segments;
+	vector<int> segidxs;
+	const int M = min(4, max<int>(1, cards.size() / 4));
+	int i = 0;
+	while (cards.size() > 0) {
+		list<Card> segment;
+		int m = min<int>(cards.size(), M);
+		auto ed = cards.begin();
+		advance(ed, m);
+		segment.splice(segment.begin(), cards, cards.begin(), ed);
+		segments.emplace_back(segment);
+		segidxs.emplace_back(i++);
+	}
+	std::shuffle(segidxs.begin(), segidxs.end(), rd);
+	for (auto i : segidxs) {
+		cards.splice(cards.end(), segments[i]);
+	}
 }

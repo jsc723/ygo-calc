@@ -75,41 +75,56 @@ deck:
         qyou-tan-tubo:
             count: 2
             description: '强贪壶'
-            program: ['[1]/(> |D| 11);(# D.10 J);@;(# X B);(# D.2 H draw!)']
+            program: ['[1]/(> |D| 11);(# D.10 J);@;(# X B);(# D.2 H [draw])']
         qyou-ken-tubo:
             count: 2
             description: '强谦壶'
-            program: ['[1]/(> |D| 5);@;(# X B);($ D.6 1 H)']
+            program: ['[1]/(> |D| 5);@;(# X B);(# D.1 H)']
         qyou-kin-tubo:
             count: 2
             description: '强金壶'
-            program: ['[^]@;(# X B);(# D.2 H draw!)']
+            program: ['[^]@;(# X B);(# D.2 H [draw])']
         kin-ken-tubo:
             count: 2
             description: '金谦壶'
-            program: ['[1]/(> |D| 5);@;(# X B);($ D.6 1 H);(! draw)']
+            program: 
+                - '[1]/(> |D| 5);@;(# X B);(# D.6 T);
+                (if (or (> |T.a:rice-like| 0) (== 1 2) (< 2 2))
+                    (# T.a:rice-like.1 H)
+                    (if (> |T.a:kowakuma| 0) 
+                        (# T.a:kowakuma.1 H) 
+                        (# T.1 H)
+                    )
+                );
+                (block 
+                    (# T D)
+                    (= x 1)
+                    (print "Hello world" x (+ x 1) (and x 10) "Hello Again")
+                    (print "hand: " H)
+                );
+                (! "draw")'
         kotuchi:
             count: 2
             description: '万宝槌'
-            program: ['(= x (- |H.!a:sushi| 1));/(> x 1);@;(# X B);(# H.!a:sushi D);(# D.:x H draw!)']
+            program: ['(= x (- |H.!a:sushi| 1));/(> x 1);@;(# X B);(# H.!a:sushi D);(# D.:x H [draw])']
         munorengoku:
             count: 2
             description: '无之炼狱'
-            program: ['/(> |H| 2);@;(# X B);(# D.1 H draw!)']
+            program: ['/(> |H| 2);@;(# X B);(# D.1 H [draw])']
         tehuda-masatu:
             count: 1
             description: '手牌抹杀'
-            program: ['@;(# X B);(= x |H|);(# H B);(# D.:x H draw!)']
+            program: ['@;(# X B);(= x |H|);(# H B);(# D.:x H [draw])']
         inochi-housatu:
             count: 2
             description: '削命'
             program: 
-                - '[1](= x |H.a:mahou| );(= y |H.a:trap|);(= z (> |H.a:M| 0));(= k (+ x (+ y z)));(= h (- |H| k));/(< h 4);
-                    @;(# X B);(= t (- 4 h));(# D.:t H draw!)'
+                - '[1](= x |H.a:mahou| );(= y |H.a:trap|);(= z (> |H.a:M| 0));(= k (+ x y z));(= h (- |H| k));/(< h 4);
+                    @;(# X B);(= t (- 4 h));(# D.:t H [draw])'
         cup-of-ace:
             count: 2
             description: '圣杯A'
-            program: ['@;(# X B);/(> (r 0 1) 0);(# D.2 H draw!)']
+            program: ['@;(# X B);/(> (rand 0 1) 0);(# D.2 H [draw])']
 
 
         
@@ -120,13 +135,13 @@ deck:
         Sushi-Non-Rice: Sushi !a:rice
         Kowakuma: a:kowakuma a:M
 simulate:
-    count: 1000
+    count: 100
     debug: true
     confidence-interval: true
     tests:
         test-expend:
             exec-program: true
-            header: '(= Summon 1)'
+            header: '(= summon 1)'
             combos:
                 A1:
                     score: 3

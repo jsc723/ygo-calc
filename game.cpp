@@ -9,7 +9,7 @@ using namespace std;
 namespace YGO {
 	Yisp::Void Yisp::Void::void_;
 	Game::Game(const Deck& deck_template, const Simulator::Topic &topic, bool debug)
-		:m_forbidden_funcs(256), m_used_funcs(256), m_vars(256), m_debug(debug),
+		:m_debug(debug),
 		m_wanted_hand_conds(topic.get_wanted_hand_conds()),
 		m_wanted_grave_conds(topic.get_wanted_grave_conds()),
 		m_header(topic.m_header)
@@ -98,31 +98,6 @@ namespace YGO {
 			}
 		}
 	}
-	void Game::select_add_hand_card(Yisp::CardSet& to_select, int k, std::shared_ptr<CardCollection>& dst)
-	{
-		list<Card> selected;
-		for (int t = 0; t < k; t++) {
-			for (auto cond_it = m_wanted_hand_conds.begin(); cond_it != m_wanted_hand_conds.end(); ++cond_it) {
-				for (auto card_node_it = to_select.cards_its.begin(); card_node_it != to_select.cards_its.end(); card_node_it++ ) {
-					if ((*cond_it)->match(**card_node_it)) {
-						to_select.collection->move_to(*card_node_it, selected);
-						to_select.cards_its.erase(card_node_it);
-						goto next_card;
-					}
-				}
-			}
-			//fallback
-			to_select.collection->move_to(*to_select.cards_its.begin(), selected);
-			to_select.cards_its.erase(to_select.cards_its.begin());
-			
-		next_card:;
-		}
-		if (selected.size() != k) {
-			panic("bug: selected size unmatched");
-		}
-		dst->push_back(selected);
-	}
-
 	bool YGO::Game::execute_card(std::shared_ptr<CardCollection> col, CardNode it, int opt)
 	{
 		Executor e(this, col, it, opt);
@@ -138,7 +113,7 @@ namespace YGO {
 	std::shared_ptr<CardCollection> YGO::Game::find_card_position(CardNode card_it) {
 		for (auto [name, c]: m_collections) {
 			for (auto it = c->begin(); it != c->end(); ++it) {
-				if (card_it == it) {
+				if (&*card_it == &*it) {
 					return c;
 				}
 			}
@@ -159,13 +134,18 @@ namespace YGO {
 
 	//------------------------CardSet-----------------------------//
 
-	std::ostream& operator<<(std::ostream& os, const Yisp::CardSet& c) {
-		os << "{";
-		for (auto it : c.cards_its) {
-			os << it->print_name() << ", ";
+	std::ostream& operator<<(std::ostream& os, const Yisp::Object& c) {
+		return os << c.to_string();
+	}
+
+	void Yisp::CardSet::move_to_front(std::shared_ptr<CardCollection> dst)
+	{
+		list<Card> tmp;
+		for (auto it : cards_its) {
+			collection->move_to(it, tmp);
 		}
-		os << "}";
-		return os;
+		cards_its.clear();
+		dst->push_front(tmp);
 	}
 
 	void Yisp::CardSet::move_to_back(std::shared_ptr<CardCollection> dst) 
@@ -174,6 +154,7 @@ namespace YGO {
 		for (auto it : cards_its) {
 			collection->move_to(it, tmp);
 		}
+		cards_its.clear();
 		dst->push_back(tmp);
 	}
 
@@ -232,13 +213,37 @@ namespace YGO {
 	}
 
 	std::shared_ptr<Yisp::String> Executor::execString(std::stringstream& s) {
-		if (s.peek() == '\"') {
-			s.get();
+		string str;
+		if (s.peek() != '\"') {
+			panic("String must start with \": " + s.str());
 		}
-		string str = read_while(s, [this](char c) {
-			return !std::isspace(c) && c != '(' && c != ')';
-			});
+		s.get(); //read "
+		str = read_while(s, [this](char c) {
+			return c != '\"';
+		});
+		s.get(); //read "
 		return make_shared<Yisp::String>(str);
+	}
+	std::shared_ptr<Yisp::VarName> Executor::execVarName(std::stringstream& s) {
+		char c = s.peek();
+		if (!islower(c)) {
+			panic("VarName must start with lower case: " + s.str());
+		}
+		t_string x = read_while(s, [](char c) {
+			return isalnum(c);
+		});
+		return make_shared<Yisp::VarName>(x);
+	}
+	std::shared_ptr<Yisp::ActionTag> Executor::execActionTag(std::stringstream& s) {
+		char c = s.peek();
+		if (c != '[') {
+			panic("ActionTag must start with ]: " + s.str());
+		}
+		t_string x = read_while(s, [](char c) {
+			return c != ']';
+		});
+		s.get(); //read ]
+		return make_shared<Yisp::ActionTag>(x);
 	}
 
 	vector< shared_ptr<Yisp::Object> > Executor::parseParams(stringstream& s, vector<parser_t> parserFuncs)
@@ -263,24 +268,48 @@ namespace YGO {
 	vector< shared_ptr<Yisp::Object> > Executor::parseVarLenParams(stringstream& s, vector<parser_t> parserFuncs)
 	{
 		vector< shared_ptr<Yisp::Object> > params;
-		int i = 0;
+		int i = 0, parsed = 0;
 		while (s.peek() != ')') {
 			if (i == parserFuncs.size()) {
 				i--;
 			}
 			params.push_back(parserFuncs[i++](this, s));
 			remove_space(s);
+			parsed++;
 			if (s.peek() == std::char_traits<char>::eof()) {
 				panic("Unexpected eof in execFunc " + s.str());
 			}
 		}
 		remove_space(s);
+		if (parsed + 1 < parserFuncs.size() || s.get() != ')') {
+			panic("Unmatched ) or wrong number of arguments: " + s.str());
+		}
 		return params;
+	}
+
+	static void show_remaining(std::stringstream& s) {
+		stringstream ss(s.str());
+		ss.seekg(s.tellg());
+		cout << "[" << ss.rdbuf() << "]" << endl;
 	}
 
 	shared_ptr<Yisp::Object> Executor::execExpr(std::stringstream& s)
 	{
-		char c = s.get();
+		char c = s.peek();
+		if (std::isdigit(c) || std::islower(c)) {
+			return execNumber(s);
+		}
+		if (std::isupper(c)) {
+			return execSet(s);
+		}
+		if (c == '\"') {
+			return execString(s);
+		}
+		if (c == '[') {
+			return execActionTag(s);
+		}
+		auto saved_read_cursor = s.tellg();
+		c = s.get();
 		if (c != '(') {
 			panic("wrong expression: " + s.str());
 		}
@@ -289,25 +318,34 @@ namespace YGO {
 		}
 		if (s.peek() == ')') {
 			//empty expression, do nothing
+			s.get();
 			return Yisp::Void::get();
 		}
+
+		
 		t_string f;
 		s >> f;
+		
+		if (op_map.count(f)) {
+			s.seekg(saved_read_cursor);
+			return execNumber(s);
+		}
+
 		remove_space(s);
 		vector< shared_ptr<Yisp::Object> > params;
-		
-		if(f == "#") //move
+
+		if(f == "#" || f == "##") //move
 		{
-			params = parseVarLenParams(s, { &Executor::execSet, &Executor::execSet, &Executor::execString });
+			params = parseVarLenParams(s, { &Executor::execSet, &Executor::execSet, &Executor::execActionTag });
 			if (params.size() < 2) {
 				panic("Need at least 2 arguments for #: " + s.str());
 			}
 			auto src = std::dynamic_pointer_cast<Yisp::CardSet>(params[0]);
 			auto dst = std::dynamic_pointer_cast<Yisp::CardSet>(params[1]);
 			for (int i = 2; i < params.size(); i++) {
-				string mtype = std::dynamic_pointer_cast<Yisp::String>(params[i])->s;
+				string tag = std::dynamic_pointer_cast<Yisp::ActionTag>(params[i])->s;
 				if (m_game->m_debug) {
-					cout << "[" << mtype << "] ";
+					cout << tag << " ";
 				}
 			}
 
@@ -317,17 +355,12 @@ namespace YGO {
 			if (m_game->m_debug) {
 				cout << "move " << *src << "from " << src->collection->name() << " to " << dst->collection->name() << endl;
 			}
-			src->move_to_back(dst->collection);
-			dst->collection->shuffle();
-		}
-		else if (f == "$") //select
-		{
-			params = parseParams(s, { &Executor::execSet, &Executor::execNumber, &Executor::execSet });
-			auto src = std::dynamic_pointer_cast<Yisp::CardSet>(params[0]);
-			int cnt = std::dynamic_pointer_cast<Yisp::Number>(params[1])->num;
-			auto dst = std::dynamic_pointer_cast<Yisp::CardSet>(params[2]);
-			m_game->select_add_hand_card(*src, cnt, dst->collection);
-			src->move_to_back(src->collection);
+			if (f == "#") {
+				src->move_to_back(dst->collection);
+			}
+			else {
+				src->move_to_front(dst->collection);
+			}
 		}
 		else if (f == "!")//forbid
 		{
@@ -337,19 +370,14 @@ namespace YGO {
 		}
 		else if (f == "=") //assign
 		{
-			params = parseParams(s, { &Executor::execString, &Executor::execNumber });
-			string x = std::dynamic_pointer_cast<Yisp::String>(params[0])->s;
+			params = parseParams(s, { &Executor::execVarName, &Executor::execNumber });
+			string x = std::dynamic_pointer_cast<Yisp::VarName>(params[0])->s;
 			int val = std::dynamic_pointer_cast<Yisp::Number>(params[1])->num;
-			if (x[0] >= 'a' && x[0] <= 'z' || x[0] >= 'A' && x[0] <= 'Z') {
-				if (x.size() == 1) {
-					m_vars[x[0]] = val;
-				}
-				else {
-					m_game->m_vars[x] = val;
-				}
+			if (x.size() == 1) {
+				m_vars[x[0]] = val;
 			}
 			else {
-				panic("error var name: " + x);
+				m_game->m_vars[x] = val;
 			}
 		}
 		else if (f == "if") {
@@ -360,6 +388,7 @@ namespace YGO {
 				remove_space(s);
 				execNothing(s);
 				remove_space(s);
+
 				if (s.get() != ')') {
 					panic("Unmatched ) or wrong number of arguments: " + s.str());
 				}
@@ -370,17 +399,33 @@ namespace YGO {
 				remove_space(s);
 				auto res = execExpr(s);
 				remove_space(s);
+
 				if (s.get() != ')') {
 					panic("Unmatched ) or wrong number of arguments: " + s.str());
 				}
 				return res;
 			}
 		}
+		else if (f == "shuffle") {
+			params = parseParams(s, { &Executor::execSet });
+			auto cardset = std::dynamic_pointer_cast<Yisp::CardSet>(params[0]);
+			cardset->collection->shuffle();
+		}
+		else if (f == "block") {
+			params = parseVarLenParams(s, { &Executor::execExpr, &Executor::execExpr });
+			return params.back();
+		}
+		else if (f == "print") {
+			params = parseVarLenParams(s, { &Executor::execExpr });
+			for (auto& param : params) {
+				cout << *param << " ";
+			}
+			cout << endl;
+		}
 		else {
-			panic("unknown function : " + f);
+			panic("unknown operation : " + f);
 		}
 
-		m_game->m_used_funcs.insert(f);
 		return Yisp::Void::get();
 	}
 
@@ -416,7 +461,7 @@ namespace YGO {
 		if (c >= 'a' && c <= 'z') {
 			s.unget();
 			t_string x = read_while(s, [](char c) {
-				return c >= 'a' && c <= 'z';
+				return isalnum(c);
 			});
 			int val = x.size() == 1 ? m_vars[x[0]] : m_game->m_vars[x];
 			//printf("%s = %d\n", x.c_str(), val);
@@ -435,56 +480,26 @@ namespace YGO {
 			auto op = read_while(s, [](char c) {
 				return !isspace(c);
 			});
-			remove_space(s);
-			int num1 = execNumber(s)->num;
-			remove_space(s);
-			int num2 = execNumber(s)->num;
-			int res;
-			if (op == "+") {
-				res = num1 + num2;
-			}
-			else if (op == "-") {
-				res = num1 - num2;
-			}
-			else if (op == "*") {
-				res = num1 * num2;
-			}
-			else if (op == "/") {
-				res = num1 / num2;
-			}
-			else if (op == ">") {
-				res = num1 > num2;
-			}
-			else if (op == "<") {
-				res = num1 < num2;
-			}
-			else if (op == ">=") {
-				res = num1 >= num2;
-			}
-			else if (op == "<=") {
-				res = num1 <= num2;
-			}
-			else if (op == "==") {
-				res = num1 == num2;
-			}
-			else if (op == "and") {
-				res = (num1 != 0) & (num2 != 0);
-			}
-			else if (op == "or") {
-				res = (num1 != 0) | (num2 != 0);
-			}
-			else if (op == "r") {
-				res = random_int(num1, num2);
-			}
-			else {
+			if (!op_map.count(op)) {
 				panic("unknown operator [" + op + "] in " + s.str());
 			}
 			remove_space(s);
-			s.get(c);
-			if (c != ')') {
-				panic(") not match in execNumber");
+			if (acc_ops.count(op)) {
+				auto nums = parseVarLenParams(s, { &Executor::execNumber, &Executor::execNumber });
+				int acc = std::dynamic_pointer_cast<Yisp::Number>(nums[0])->num;
+				for (int i = 1; i < nums.size(); i++) {
+					int x = std::dynamic_pointer_cast<Yisp::Number>(nums[i])->num;
+					acc = op_map[op](acc, x);
+				}
+				return make_shared<Yisp::Number>(acc);
 			}
-			return make_shared<Yisp::Number>(res);
+			else {
+				auto nums = parseParams(s, { &Executor::execNumber, &Executor::execNumber });
+				int num1 = std::dynamic_pointer_cast<Yisp::Number>(nums[0])->num;
+				int num2 = std::dynamic_pointer_cast<Yisp::Number>(nums[1])->num;
+				int res = op_map[op](num1, num2);
+				return make_shared<Yisp::Number>(res);
+			}
 		}
 		return make_shared<Yisp::Number>(0);
 	}
@@ -547,6 +562,25 @@ namespace YGO {
 		return execNumber(s);
 	}
 
+	std::unordered_map<std::string, binary_op_t> Executor::op_map = {
+		{"+", {[](int x, int y) { return x + y; }}},
+		{"-", {[](int x, int y) { return x - y; }}},
+		{"*", {[](int x, int y) { return x * y; }}},
+		{"/", {[](int x, int y) { return x / y; }}},
+		{"and", {[](int x, int y) { return x && y; }}},
+		{"or", {[](int x, int y) { return x || y; }}},
+		{">", {[](int x, int y) { return x > y; }}},
+		{">=", {[](int x, int y) { return x >= y; }}},
+		{"<", {[](int x, int y) { return x < y; }}},
+		{"<=", {[](int x, int y) { return x <= y; }}},
+		{"==", {[](int x, int y) { return x == y; }}},
+		{"rand", {[](int x, int y) { return random_int(x, y); }}}
+	};
+
+	std::unordered_set<std::string> Executor::acc_ops = {
+		"+", "*", "and", "or"
+	};
+
 	YGO::Executor::Executor(Game* game, shared_ptr<CardCollection> src, CardNode card_it, int opt)
 		:m_game(game), m_src(src), m_card_it(card_it), m_opt(opt), m_cond_break(false),
 			m_activated(false), m_vars(128), m_set_allowed_chars(256)
@@ -565,6 +599,7 @@ namespace YGO {
 		m_set_allowed_chars[':'] = true;
 		m_set_allowed_chars['.'] = true;
 		m_set_allowed_chars['!'] = true;
+
 	}
 
 	bool YGO::Executor::run()
@@ -574,11 +609,6 @@ namespace YGO {
 		t_string program = card.m_effects[m_opt].m_program;
 		vector<t_string> statements = split(program, ";");
 		for (auto statement : statements) {
-			//printf("---------%s-----------", statement.c_str());
-			//printf("deck: %d, hand: %d\n", m_game->m_deck->size(), m_game->m_hand->size());
-			//for (auto it = m_game->m_hand->begin(); it != m_game->m_hand->end(); ++it) {
-			//	cout << it->print_name() << endl;
-			//}
 
 			trim(statement);
 			if (statement.empty()) {
