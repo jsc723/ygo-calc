@@ -190,13 +190,13 @@ First turn average success rate: 74.40% +- 2.70%  average score: 1.12 +- 0.05
 "Yisp v0.4 documentation"
 
 <effect> -> [<effect-attributes>]<statements>
-       | -> <statements>
+        |-> <statements>
 <effect-attributes> -> {1^HB}的任意排列组合
     "1代表卡名一回合一次，^代表只能在回合开始时发动"
     "H代表在手牌时可以发动，B代表在墓地时可以发动，如果不写H或B则默认是在手牌发动"
 
 <statements> ->  <statement>
-             |-> <statements>;<statement>            "语句之间用;隔开"
+            |->  <statements>;<statement>            "语句之间用;隔开"
 <statement> ->  @                                    "发动效果，见注意事项"
             |-> /<number>                            "如果<number>的值为0则不再执行后续语句"
             |-> <expression>
