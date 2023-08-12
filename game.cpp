@@ -373,12 +373,7 @@ namespace YGO {
 			params = parseParams(s, { &Executor::execVarName, &Executor::execNumber });
 			string x = std::dynamic_pointer_cast<Yisp::VarName>(params[0])->s;
 			int val = std::dynamic_pointer_cast<Yisp::Number>(params[1])->num;
-			if (x.size() == 1) {
-				m_vars[x[0]] = val;
-			}
-			else {
-				m_game->m_vars[x] = val;
-			}
+			setValValue(x, val);
 		}
 		else if (f == "if") {
 			auto cond = execNumber(s);
@@ -463,7 +458,7 @@ namespace YGO {
 			t_string x = read_while(s, [](char c) {
 				return isalnum(c);
 			});
-			int val = x.size() == 1 ? m_vars[x[0]] : m_game->m_vars[x];
+			int val = getVarValue(x);
 			//printf("%s = %d\n", x.c_str(), val);
 			return make_shared<Yisp::Number>(val);
 		}

@@ -134,6 +134,22 @@ namespace YGO {
 		std::vector<int> m_vars;
 		std::vector<bool> m_set_allowed_chars;
 
+		int getVarValue(const std::string& x) {
+			if (x.empty()) {
+				return 0;
+			}
+			return x.size() == 1 ? m_vars[x[0]] : m_game->m_vars[x];
+		}
+
+		void setValValue(const std::string& x, int val) {
+			if (x.size() == 1) {
+				m_vars[x[0]] = val;
+			}
+			else {
+				m_game->m_vars[x] = val;
+			}
+		}
+
 		using parser_t = std::function<std::shared_ptr<Yisp::Object>(Executor*, std::stringstream&)>;
 
 		static std::unordered_map<std::string, binary_op_t> op_map;

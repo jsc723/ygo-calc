@@ -1,0 +1,23 @@
+deck:
+    size: 60
+    cards:
+        gecao:
+            count: 2
+            attribute: ['card']
+            program: 
+                - '[1]/(> |D| 40);(= x (- |D| 40));@;(# X B);(# D.:x B)'
+        others:
+            attribute: ['card']
+            count: -1
+simulate:
+    count: 10000
+    confidence-interval: true
+    tests:
+        test:
+            start-card: 5
+            exec-program: true
+            header: ''
+            combos:
+                test1:
+                    score: '|B|'
+                    condition: '(> |B| 1)'
