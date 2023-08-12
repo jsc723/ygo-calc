@@ -185,7 +185,7 @@ First turn average success rate: 74.40% +- 2.70%  average score: 1.12 +- 0.05
 
 ### 卡牌效果脚本
 我把这个脚本的语言称作Yisp（借鉴LISP）
-每个效果的语法详细定义、用法如下（注：//中间的部分是正则表达式, <EMPTY>就是什么也没有）
+每个效果的语法详细定义、用法如下（注：//中间的部分是正则表达式, `<EMPTY>`就是什么也没有）
 ```
 "Yisp v0.4 documentation"
 
