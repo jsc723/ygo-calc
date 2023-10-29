@@ -260,6 +260,8 @@ First turn average success rate: 74.40% +- 2.70%  average score: 1.12 +- 0.05
                     "选取集合中所有拥有<card-attribute>属性的卡（不支持模糊匹配）"
                 |-> .<number-literal>
                     "选取集合中前<number-literal>张卡"
+                |-> .:<number>
+                    "选取集合中前<number>张卡"
     
 ```
 #### 注意事项
