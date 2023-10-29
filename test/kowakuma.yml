@@ -1,76 +1,221 @@
 deck:
     cards:
-        kowakuma-trion:
+        トリオンの蟲惑魔:
             count: 3
             attribute: ['monstor', 'kowakuma']
-            description: '特里恩虫惑魔'
-        kowakuma-tio:
+        ティオの蟲惑魔:
+            count: 2
+            attribute: ['monstor', 'kowakuma']
+        ランカの蟲惑魔:
             count: 3
             attribute: ['monstor', 'kowakuma']
-            description: '蒂奥虫惑魔'
-        kowakuma-ranka:
+        プティカの蟲惑魔:
             count: 3
             attribute: ['monstor', 'kowakuma']
-            description: '兰卡虫惑魔'
-        kowakuma-jiner:
+        キノの蟲惑魔:
             count: 3
             attribute: ['monstor', 'kowakuma']
-            description: '吉娜虫惑魔'
-        kowakuma-atora:
-            attribute: ['monstor', 'kowakuma']
-            description: '阿特拉虫惑魔'
-        urara:
+        蟲惑の園:
+            count: 1
+            attribute: []
+            description: '虫妹场地'
+        灰流丽:
+            count: 2
+            attribute: ['monstor', 'hand-trap', 'k', 'x']
+        # 增殖的G:
+        #     count: 2
+        #     attribute: ['monstor', 'hand-trap', 'k', 'x']
+
+        ホールティアの蟲惑魔:
+            count: 2
+            attribute: ['trap', 'kowakuma-trap']
+            description: 'ホールティアの蟲惑魔'
+        锁鸟:
+            count: 2
+            attribute: ['trap', 'hand-trap', 'k', 'x']
+        天童:
+            count: 2
+            attribute: ['kk']
+        狼:
+            count: 2
+            attribute: ['x', 'k']
+        白银姬:
+            count: 1
+        三战:
+            count: 1
+            attribute: ['kk']
+        胜负:
+            count: 2
+            attribute: ['kk', 'trap']
+        泡影:
+            count: 2
+            attribute: ['k', 'trap', 'x']
+        本家坑:
+            count: 7
+            attribute: ['trap', 'kowakuma-trap', 'xx']
+        其他坑:
             count: 3
-            attribute: ['monstor', 'hand-trap']
-            description: '灰流丽'
-        zou-g:
+            attribute: ['trap', 'xx']
+        反击陷阱:
             count: 3
-            attribute: ['monstor', 'hand-trap']
-            description: '增殖G'
-        bu-mian-jia:
-            count: 3
-            attribute: ['trap']
-            description: '布面甲'
-        houyou:
-            count: 3
-            attribute: ['trap', 'hand-trap']
-            description: '泡影'
-        other-trap:
-            count: 15
-            attribute: ['trap']
-            description: '红坑'
+            attribute: ['fanji-trap', 'xxx']
         
     alias:
         HandTrap: a:hand-trap
 simulate:
-    count: 1000
+    count: 100
     confidence-interval: true
     tests:
         test-expend:
+            header: >
+                (= sono 5);
+                (= frsa 20);
+                (= strs 10);
+                (= trap 15);
+                (= kino 5);
+                (= other 9);
+                (= other2 (* 2 other));
+                (= other3 (* 3 other));
+                (= other4 (* 4 other));
+            
             combos:
-                A1:
-                    score: "|H.a:trap|"
+                Kowakuma0:
+                    score: "other4"
+                    hand: 
+                        - a:kowakuma
+                Trion0:
+                    score: "(+ trap other4)"
                     hand:
+                        - トリオンの蟲惑魔
+                Trion-NTrap:
+                    score: "(+ trap frsa other3)"
+                    hand:
+                        - トリオンの蟲惑魔
+                        - a:trap
+                Trion-KTrap:
+                    score: "(+ trap trap frsa other3)"
+                    hand:
+                        - トリオンの蟲惑魔
+                        - a:kowakuma-trap
+                Ranka0:
+                    score: "(+ trap other4)"
+                    hand: 
+                        - ランカの蟲惑魔
+                Ranka-KTrap:
+                    score: "(+ trap frsa other3)"
+                    hand: 
+                        - ランカの蟲惑魔
+                        - a:kowakuma-trap
+                Putika-Trion:
+                    score: "(+ trap trap frsa other3)"
+                    hand:
+                        - プティカの蟲惑魔
+                        - トリオンの蟲惑魔
+                Putika-Tio:
+                    score: "(+ trap frsa other3)"
+                    hand:
+                        - プティカの蟲惑魔
+                        - ティオの蟲惑魔
+                Putika-Tio-KTrap:
+                    score: "(+ trap trap frsa other2)"
+                    hand:
+                        - プティカの蟲惑魔
+                        - ティオの蟲惑魔
+                        - a:kowakuma-trap
+                Putika-Ranka:
+                    score: "(+ trap frsa other3)"
+                    hand:
+                        - プティカの蟲惑魔
+                        - ランカの蟲惑魔
+                Putika-Ranka-KTrap:
+                    score: "(+ trap trap frsa other3)"
+                    hand:
+                        - プティカの蟲惑魔
+                        - ランカの蟲惑魔
+                        - a:kowakuma-trap
+                Putika-Kino-Trap:
+                    score: "(+ trap trap trap other2)"
+                    hand:
+                        - プティカの蟲惑魔
+                        - キノの蟲惑魔
+                        - a:trap
+                Putika-Kino-KTrap:
+                    score: "(+ trap trap frsa sono kino other2)"
+                    hand:
+                        - プティカの蟲惑魔
+                        - キノの蟲惑魔
+                        - a:kowakuma-trap
+                Holetia0:
+                    score: "other3"
+                    hand:
+                        - ホールティアの蟲惑魔
+                        - a:trap
+                Holetia-Kowakuma-Trap:
+                    score: "(+ kino frsa strs trap other2)"
+                    hand:
+                        - ホールティアの蟲惑魔
+                        - a:trap
+                        - a:kowakuma
+                Sono-Ranka-Trap:
+                    score: "(+ sono kino frsa strs other2)"
+                    hand: 
+                        - ランカの蟲惑魔
+                        - 蟲惑の園
+                Sono-Ranka-KTrap:
+                    score: "(+ sono kino frsa strs trap other2)"
+                    hand: 
+                        - ランカの蟲惑魔
+                        - 蟲惑の園
+                Sono-ティオの蟲惑魔-Trap:
+                    score: "(+ sono strs frsa other2)"
+                    hand: 
+                        - 蟲惑の園
+                        - ティオの蟲惑魔
                         - a:kowakuma
                         - a:trap
-                A2:
-                    score: "(+ 2 |H.a:trap|)"
-                    hand:
+                Sono-ティオの蟲惑魔-KTrap:
+                    score: "(+ sono strs frsa trap other2)"
+                    hand: 
+                        - 蟲惑の園
+                        - a:ティオの蟲惑魔
                         - a:kowakuma
-                        - bu-mian-jia
+                        - a:kowakuma-trap
+                Sono-トリオンの蟲惑魔:
+                    score: "(+ sono frsa strs trap other2)"
+                    hand:
+                        - 蟲惑の園
+                        - トリオンの蟲惑魔
+                        - a:kowakuma
+                Sono-キノの蟲惑魔-Trap:
+                    score: "(+ sono frsa strs trap other2)"
+                    hand:
+                        - 蟲惑の園
+                        - キノの蟲惑魔
+                        - a:kowakuma
                         - a:trap
+                Sono-キノの蟲惑魔-KTrap:
+                    score: "(+ sono frsa strs trap trap other2)"
+                    hand:
+                        - 蟲惑の園
+                        - キノの蟲惑魔
+                        - a:kowakuma
+                        - a:kowakuma-trap
         test-hand-trap:
             start-card: 5
             combos:
-                HT1:
-                    score: '|H.a:hand-trap|'   #计算手上手坑的个数
-                    hand:
-                        - HandTrap
-                HT2:
+                HT:
                     score: '|H.a:hand-trap|'
                     hand:
                         - HandTrap
-                        - HandTrap
-                urara-2:
-                    condition: '(== |H.urara| 2)' #也可以编程使用表达式
+        test-kk:
+            start-card: 6
+            combos:
+                K:
+                    score: '(+ |H.a:k| (* 2 |H.a:kk|))'
+                    hand:
+                        - a:k
+                KK:
+                    score: '(+ |H.a:k| (* 2 |H.a:kk|))'
+                    hand:
+                        - a:kk
                     

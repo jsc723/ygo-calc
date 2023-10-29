@@ -7,6 +7,7 @@
 #include <functional>
 #include <string>
 #include <cmath>
+#include <Windows.h>
 
 namespace YGO
 {
@@ -31,5 +32,17 @@ namespace YGO
 	double compute_ci(double p, int n);
 	double compute_mean(const std::vector<double> data);
 	double compute_std(const std::vector<double> data);
+
+	std::string utf8_to_local_encoding(const std::string& utf8String);
+
+	class UTF8CodePage {
+	public:
+		UTF8CodePage();
+		~UTF8CodePage();
+
+	private:
+		UINT m_old_code_page;
+	};
+
 	
 }

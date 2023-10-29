@@ -1,5 +1,6 @@
 #include "global.h"
 #include <random>
+#include <Windows.h>
 
 //ref: https://leetcode.com/problems/wildcard-matching/solution/
 bool YGO::wildCardMatch(const t_string& s, const t_string& p)
@@ -130,4 +131,36 @@ double YGO::compute_std(const std::vector<double> data) {
 		sum += (x - mean) * (x - mean);
 	}
 	return sqrt(sum / (n - 1));
+}
+
+std::string YGO::utf8_to_local_encoding(const std::string& utf8String) {
+
+	// Calculate the required buffer size for the converted string
+	int requiredSize = MultiByteToWideChar(CP_UTF8, 0, utf8String.c_str(), -1, nullptr, 0);
+
+	// Allocate a wide-character buffer
+	std::wstring wideString(requiredSize, 0);
+
+	// Convert the UTF-8 string to wide-character
+	MultiByteToWideChar(CP_UTF8, 0, utf8String.c_str(), -1, &wideString[0], requiredSize);
+
+	// Calculate the required buffer size for the console encoding
+	int consoleSize = WideCharToMultiByte(CP_ACP, 0, wideString.c_str(), -1, nullptr, 0, nullptr, nullptr);
+
+	// Allocate a buffer for the console-encoded string
+	std::string consoleString(consoleSize, 0);
+
+	// Convert the wide-character string to the console encoding
+	WideCharToMultiByte(CP_ACP, 0, wideString.c_str(), -1, &consoleString[0], consoleSize, nullptr, nullptr);
+
+	return consoleString;
+}
+
+YGO::UTF8CodePage::UTF8CodePage() : m_old_code_page(::GetConsoleOutputCP()) {
+	::SetConsoleOutputCP(CP_UTF8);
+}
+
+YGO::UTF8CodePage::~UTF8CodePage()
+{
+	::SetConsoleOutputCP(m_old_code_page);
 }

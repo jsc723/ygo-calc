@@ -130,6 +130,7 @@ void YGO::Simulator::run(const Deck& deck_template, Context& context)
 		for (int i = 0; i < m_topics.size(); i++)
 		{
 			Game g(deck_template, m_topics[i], m_debug);
+			g.runHeader();
 			if (m_topics[i].m_exec_program) {
 				g.run();
 			}
@@ -143,7 +144,7 @@ void YGO::Simulator::run(const Deck& deck_template, Context& context)
 				if (combo_score > 0) {
 					success[i][j]++;
 					any_success = true;
-					max_topic_score = std::max(max_topic_score, combo_score);
+					max_topic_score = std::max<int>(max_topic_score, combo_score);
 				}
 			}
 			total_success[i] += any_success;

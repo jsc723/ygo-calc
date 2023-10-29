@@ -48,12 +48,13 @@ namespace YGO {
 
 	}
 
-
-	void Game::run() {
+	void Game::runHeader() {
 		if (m_header.size()) {
 			Executor e(this, m_collections["H"], m_collections["H"]->end(), 0);
 			e.run_program(m_header);
 		}
+	}
+	void Game::run() {
 		if (m_debug) {
 			cout << "-----------run-------------" << endl;
 		}

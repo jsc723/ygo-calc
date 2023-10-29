@@ -38,6 +38,7 @@ void checkPath(const string& path)
 
 int main(int argc, char **argv)
 {
+    UTF8CodePage use_utf8;
     if (argc > 2)
     {
         panic("Usage: ./ygo-calc.exe <deck.yml>");

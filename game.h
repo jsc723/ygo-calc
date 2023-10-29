@@ -99,6 +99,7 @@ namespace YGO {
 	public:
 		Game(const Deck &deck_template, const Simulator::Topic &topic, bool debug);
 		void run();
+		void runHeader();
 		bool execute_card(std::shared_ptr<CardCollection> col, CardNode it, int opt);
 		int compute_number(t_string program);
 		std::shared_ptr<CardCollection> find_card_position(CardNode it);
