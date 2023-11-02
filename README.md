@@ -449,6 +449,7 @@ First turn average success rate: 70.00%    average score: 0.70
 ```
 可以看到模拟器会自动发动卡牌展开（只需要展开到随机部分结束就行了）
 
+
 ## 更新日志
 ### v2.5
 Yisp v0.4
