@@ -212,7 +212,7 @@ First turn average success rate: 74.40% +- 2.70%  average score: 1.12 +- 0.05
             |-> (shuffle <card-collection>)
                 "洗切<card-collection>"
             |-> (! <string>)
-                "禁止本回合再执行标有<string>!的效果，例如(! draw)禁止所有标有draw!的效果"
+                "禁止本回合再执行标有<string>!的效果，例如(! draw)禁止所有标有[draw]的效果"
             |-> (= <varname> <number>)
                 "把变量<varname>的值设置为<number>"
                 "如果<varname>的长度在两个字符以上，则这个变量的值在当前回合一直有效（全局变量）"
