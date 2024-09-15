@@ -227,7 +227,7 @@ First turn average success rate: 74.40% +- 2.70%  average score: 1.12 +- 0.05
                   |-> <expression> <expression-list>
 <action-tags>  -> <action-tag>
        |-> <action-tag> <action-tags>
-<action-tag> -> [/[^;]+/]
+<action-tag> -> /\[[^;]+\]/
 <varname> -> /[a-z][a-zA-Z0-9]*/
 <string> -> "/[^;]*/"
 <number-literal> -> /[0-9]+/
